@@ -1,0 +1,130 @@
+import express from "express";
+import bcrypt from "bcryptjs";
+
+import { generatePyfile } from "./generatePy.js";
+import { executepy } from "./executepy.js";
+import { executeDart } from "./executeDart.js";
+import { generateDartfile } from "./generateDart.js";
+
+import User from "../model/userSchema.js";
+
+const router = express.Router();
+
+/* ================= HOME ================= */
+router.get("/", (req, res) => {
+  res.send("Welcome to the Home page from auth.js");
+});
+
+/* ================= PYTHON RUN ================= */
+router.use(express.urlencoded({ extended: true }));
+
+router.post("/runpy", async (req, res) => {
+  const { language = "py", code = "print('hello python')" } = req.body;
+
+  if (!code) {
+    return res.status(400).json({ success: false, error: "Please Enter Code" });
+  }
+
+  try {
+    const filepath = await generatePyfile(language, code);
+    const output = await executepy(filepath);
+    res.json({ filepath, output });
+  } catch (err) {
+    const errorMessage = err.toString();
+    const match = errorMessage.match(/line \d+\s+([^\n]+)/);
+    const realError = match ? match[0] : "Unknown error occurred";
+    res.status(500).json({ error: realError });
+  }
+});
+
+/* ================= DART RUN ================= */
+router.post("/rundart", async (req, res) => {
+  const { language = "dart", code = "void main(){print('hello dart');}" } =
+    req.body;
+
+  if (!code) {
+    return res.status(400).json({ success: false, error: "Please Enter Code" });
+  }
+
+  try {
+    const filepath = await generateDartfile(language, code);
+    const output = await executeDart(filepath);
+    res.json({ filepath, output });
+  } catch (err) {
+    const errorMessage = err.toString();
+    const match = errorMessage.match(/Error: ([^\n]+)/);
+    const realError = match ? match[0] : "Unknown error occurred";
+    res.status(500).json({ error: realError });
+  }
+});
+
+/* ================= REGISTER ================= */
+router.post("/register", async (req, res) => {
+  const { username, email, password, cpassword, role } = req.body;
+
+  if (!username || !email || !password || !cpassword) {
+    return res.status(422).json({ error: "Fill all required fields" });
+  }
+
+  try {
+    const userExist = await User.findOne({ email });
+
+    if (userExist) {
+      return res.status(409).json({ error: "Email already exists" });
+    }
+
+    if (password !== cpassword) {
+      return res.status(400).json({ error: "Passwords do not match" });
+    }
+
+    const user = new User({ username, email, password, role });
+    await user.save();
+
+    res.status(201).json({ success: "User registered successfully" });
+  } catch (err) {
+    console.error("Register Error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+/* ================= LOGIN ================= */
+router.post("/login", async (req, res) => {
+  const { username, password } = req.body;
+
+  if (!username || !password) {
+    return res.status(400).json({ error: "Enter all fields" });
+  }
+
+  try {
+    const user = await User.findOne({ username });
+
+    if (!user) {
+      return res.status(401).json({ error: "Invalid credentials" });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+
+    if (!isMatch) {
+      return res.status(401).json({ error: "Invalid credentials" });
+    }
+
+    const token = await user.generateAuthToken();
+
+    res.cookie("jwt_users_token", token, {
+      httpOnly: true,
+      maxAge: 30 * 24 * 60 * 60 * 1000,
+    });
+
+    res.status(200).json({ message: "Login successful" });
+  } catch (err) {
+    console.error("Login Error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+/* ================= LOGOUT ================= */
+router.get("/logout", (req, res) => {
+  res.status(200).json({ message: "User logged out" });
+});
+
+export default router;
