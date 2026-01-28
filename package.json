@@ -5,9 +5,9 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "frontend-vite": "cd frontend-vite && npm start",
+    "frontend-vite": "cd frontend && npm start",
     "backend": "cd backend && npm start",
-    "both": "concurrently \"npm run backend\" \"npm run frontend-vite\""
+    "both": "concurrently \"npm run backend\" \"npm run frontend\""
   },
   "keywords": [],
   "author": "",
