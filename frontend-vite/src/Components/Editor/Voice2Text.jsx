@@ -1,131 +1,177 @@
-import { useEffect } from 'react';
-import 'regenerator-runtime/runtime'; 
+import { useEffect, useState } from "react";
+import "regenerator-runtime/runtime";
 import useClipboard from "react-use-clipboard";
-import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition';
-import React, { useState } from 'react';
-import LangList from './LangList';
-import { toast } from 'react-hot-toast';
-// import Header from '../Header';
-
+import SpeechRecognition, {
+  useSpeechRecognition,
+} from "react-speech-recognition";
+import LangList from "./LangList";
+import { toast } from "react-hot-toast";
+import {
+  FaMicrophone,
+  FaStop,
+  FaCopy,
+  FaTrash,
+  FaUpload,
+  FaDownload,
+} from "react-icons/fa";
 
 function Voice2Text() {
-  let [textToCopy,setTextToCopy] = useState();
-  let [isCopied, setCopied] = useClipboard(textToCopy);
+  const [text, setText] = useState("");
+  const [isRecording, setIsRecording] = useState(false);
+  const [isCopied, setCopied] = useClipboard(text);
 
   const phraseToSymbolMap = {
-    'semicolon': ';',
-    'semi colon': ';',
-    'comma': ',',
-    'colon':':',
-    'dot':'.',
-    'open parentheses':'(',
-    'close parentheses':')',
-    'open round bracket':'(',
-    'open roundbracket':'(',
-    'close round bracket':')',
-    'closed round bracket':')',
-    'close roundbracket':')',
-    'closed roundbracket':')',
-    'open curly bracket':'{',
-    'open curlybracket':'{',
-    'close curlybracket':'}',
-    'close curly bracket':'}',
-    'open squarebracket':'[',
-    'open square bracket':'[',
-    'clsoe square bracket':']',
-    'close squarebracket':']',
-    'open single codes':"'",
-    'open singlcodes':"'",
-    'close single codes':"'",
-    'closed single codes':"'",
-    'close singlcodes':"'",
-    'closed singlcodes':"'",
-    'open double codes':'"',
-    'open doublcuote':'"',
-    'close double cuote':'"',
-    'close doublcuote':'"'
-  }
-
-    const startListening = () =>{  
-      toast.success("Start Speaking");
-      toast.loading("Listening...",{duration:10})
-      SpeechRecognition.startListening({ continuous: true, language: 'en-IN' });
-    } 
-
-  const processTranscript = (transcript) => {
-    // console.log('Original transcript:', transcript); // Add this line
-    let processedTranscript = transcript;
-  
-    for (const [phrase, symbol] of Object.entries(phraseToSymbolMap)) {
-      const regex = new RegExp(`\\b${phrase}\\b`, 'gi'); // Use word boundary and case-insensitive flag
-      processedTranscript = processedTranscript.replace(regex, symbol);
-    }
-  
-    // console.log('Processed transcript:', processedTranscript); // Add this line
-    setTextToCopy(processedTranscript);
+    semicolon: ";",
+    "semi colon": ";",
+    comma: ",",
+    colon: ":",
+    dot: ".",
+    "new line": "\n",
+    "next line": "\n",
+    "open bracket": "(",
+    "close bracket": ")",
+    "open curly bracket": "{",
+    "close curly bracket": "}",
+    "open square bracket": "[",
+    "close square bracket": "]",
+    "open single quote": "'",
+    "close single quote": "'",
+    "open double quote": '"',
+    "close double quote": '"',
   };
 
-  const { transcript,resetTranscript, browserSupportsSpeechRecognition } = useSpeechRecognition();
+  const { transcript, resetTranscript, browserSupportsSpeechRecognition } =
+    useSpeechRecognition();
 
-  
   useEffect(() => {
-    processTranscript(transcript);
+    let processed = transcript;
+    for (const [key, value] of Object.entries(phraseToSymbolMap)) {
+      const regex = new RegExp(`\\b${key}\\b`, "gi");
+      processed = processed.replace(regex, value);
+    }
+    setText(processed);
   }, [transcript]);
 
   if (!browserSupportsSpeechRecognition) {
-    return <span>Browser doesnt support speech recognition.</span>;
+    return <p className="p-4">Browser does not support speech recognition.</p>;
   }
 
-  const clearAll = ()=>{
-    // const tar = document.querySelector(".voiceresultclass")
-    // tar.innerHTML = ""
-    setTextToCopy("");
+  const startListening = () => {
+    setIsRecording(true);
+    toast.success("Recording started");
+    SpeechRecognition.startListening({
+      continuous: true,
+      language: "en-IN",
+    });
+  };
+
+  const stopListening = () => {
+    setIsRecording(false);
+    SpeechRecognition.stopListening();
+    toast.success("Recording stopped");
+  };
+
+  const clearText = () => {
+    setText("");
     resetTranscript();
-    toast.success("Text Cleared")
-  }
+    toast.success("Cleared");
+  };
+
+  const downloadText = () => {
+    const blob = new Blob([text], { type: "text/plain" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "DevCanvas-voice.txt";
+    link.click();
+    toast.success("File downloaded");
+  };
 
   return (
-    <>
-        <div className="voiceContainer">
-            <div className="voiceBody wholeeditorBody">
-                <div className="leftLang">
-                    <LangList leftcolorv="white"/>
-                </div>
-                <div className="voicePlayground">
-                    <h1 className="title">Voice to Text Converter</h1>
-                    <div className="voiceTextContainer">
-                        <div className="voice2TextOutput" onClick={()=>setTextToCopy(textToCopy)}>
-                            {/* <mark><h3 contentEditable>{transcript}</h3></mark> */}
-                            <mark><h3 className='voiceresultclass'>{textToCopy}</h3></mark>
-                        </div>
-                        <div className="btngroup">
-                            <button onClick={startListening}>Start</button>
-                            <button onClick={SpeechRecognition.stopListening}>Stop</button>
-                            <button onClick={setCopied}>{isCopied ? "Copied" : "Copy"}</button>
-                            <button onClick={clearAll}>Clear</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    <div className="flex h-screen bg-slate-950 text-zinc-100">
+      <LangList />
+
+      <div className="flex-1 flex flex-col">
+        {/* HEADER */}
+        <div className="flex justify-between items-center px-6 py-4 border-b border-zinc-800 bg-zinc-900">
+          <h2 className="text-indigo-400 font-semibold text-lg">voice.txt</h2>
+          <span className="text-xs text-zinc-500">Voice → Text</span>
         </div>
-    </>
-  )
+
+        <div className="flex flex-1 gap-4 p-5">
+          <div className="w-1/2 bg-zinc-900 border border-zinc-800 rounded-xl p-6 flex flex-col items-center justify-center gap-6">
+            <FaMicrophone
+              size={64}
+              className={
+                isRecording ? "text-red-500 animate-pulse" : "text-indigo-400"
+              }
+            />
+
+            <p className="text-zinc-400 text-center">
+              Click record and speak clearly
+            </p>
+
+            <div className="flex gap-4">
+              <button
+                onClick={startListening}
+                disabled={isRecording}
+                className={`editor-btn ${
+                  isRecording ? "cursor-pointer" : "opacity-50 cursor-not-allowed"
+                }`}
+              >
+                🎙 Record
+              </button>
+
+              <button
+                onClick={stopListening}
+                disabled={!isRecording}
+                className={`editor-btn ${
+                  !isRecording ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
+                }`}
+              >
+                ⏹ Stop
+              </button>
+            </div>
+
+            <div className="w-full border-t border-zinc-800 my-2" />
+
+            <div className="text-center opacity-60">
+              <FaUpload className="mx-auto mb-1" />
+              <p className="text-sm">Upload Audio</p>
+              <p className="text-xs text-zinc-500">(coming soon)</p>
+            </div>
+
+            <p className="text-xs text-zinc-500 italic">
+              Tip: say “semicolon”, “new line”, “open bracket”
+            </p>
+          </div>
+
+          <div className="w-1/2 bg-zinc-900 border border-zinc-800 rounded-xl p-4 flex flex-col">
+            <div className="flex justify-between items-center mb-2">
+              <p className="text-sm text-zinc-400">🖥 Output</p>
+              <div className="flex gap-2">
+                <button onClick={setCopied} className="editor-btn cursor-pointer">
+                  <FaCopy /> Copy
+                </button>
+                <button onClick={downloadText} className="editor-btn cursor-pointer">
+                  <FaDownload /> Download
+                </button>
+                <button onClick={clearText} className="editor-btn cursor-pointer danger">
+                  <FaTrash /> Clear
+                </button>
+              </div>
+            </div>
+
+            <textarea
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              className="flex-1 bg-transparent resize-none outline-none font-mono text-lg text-green-400"
+              placeholder="// Converted text will appear here"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
+
 export default Voice2Text;
-
-
-/*
-
-dependencies to install--
-
-npm install --save react-speech-recognition
-
-npm i --save regenerator-runtime
-
-npm install --save-dev @babel/plugin-transform-runtime @babel/runtime
-
-npm install react-use-clipboard
-
-npm run dev
-
-*/

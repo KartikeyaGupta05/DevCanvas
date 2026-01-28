@@ -12,9 +12,9 @@ function Header() {
     if(state){
       return (
         <>
-          {/* <NavLink to='/login'><button className='Headerbtn Headerbtn1 btn'>Login</button></NavLink>
-            <NavLink to='/register'><button className='Headerbtn Headerbtn2 btn'>Register</button></NavLink> */}
-            <NavLink to='/logout'><button className='Headerbtn Headerbtn2 btn'>Logout</button></NavLink>
+          {/* <NavLink to='/login'><button className='Headerbtn cursor-pointer Headerbtn1 btn'>Login</button></NavLink>
+            <NavLink to='/register'><button className='Headerbtn cursor-pointer Headerbtn2 btn'>Register</button></NavLink> */}
+            <NavLink to='/logout'><button className='cursor-pointer Headerbtn Headerbtn2 btn'>Logout</button></NavLink>
         </>
       )
     }
@@ -22,8 +22,8 @@ function Header() {
       return(
         <>
           
-          <NavLink to='/login'><button className='Headerbtn Headerbtn1 btn'>Login</button></NavLink>
-            <NavLink to='/register'><button className='Headerbtn Headerbtn2 btn'>Register</button></NavLink>
+          <NavLink to='/login'><button className='Headerbtn cursor-pointer Headerbtn1 btn'>Login</button></NavLink>
+            <NavLink to='/register'><button className='Headerbtn cursor-pointer Headerbtn2 btn'>Register</button></NavLink>
             {/* <NavLink to='/logout'><button className='Headerbtn Headerbtn2 btn'>Logout</button></NavLink> */}
         </>
       )
@@ -36,9 +36,9 @@ function Header() {
             <img className='headerlogo' src={headerImg} alt="MainLogo" /><NavLink className='headerp' to='/'>DevCanvas</NavLink>
         </div>
         <div className="Headerbtngroup">
-            {/* <NavLink to='/login'><button className='Headerbtn Headerbtn1 btn'>Login</button></NavLink>
-            <NavLink to='/register'><button className='Headerbtn Headerbtn2 btn'>Register</button></NavLink>
-            <NavLink to='/logout'><button className='Headerbtn Headerbtn2 btn'>Logout</button></NavLink> */}
+            {/* <NavLink to='/login'><button className='Headerbtn cursor-pointer Headerbtn1 btn'>Login</button></NavLink>
+            <NavLink to='/register'><button className='Headerbtn cursor-pointer Headerbtn2 btn'>Register</button></NavLink>
+            <NavLink to='/logout'><button className='Headerbtn cursor-pointer Headerbtn2 btn'>Logout</button></NavLink> */}
             <RenderMenu/>
         </div> 
     </div>

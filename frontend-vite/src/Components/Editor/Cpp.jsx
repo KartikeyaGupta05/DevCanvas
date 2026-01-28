@@ -3,17 +3,24 @@ import LangList from "./LangList";
 import { toast } from "react-hot-toast";
 import { FaCopy, FaDownload } from "react-icons/fa";
 
-const DEFAULT_PY_CODE = `print("Hello DevCanvas!")`;
+const DEFAULT_CPP_CODE = `#include <iostream>
+using namespace std;
 
-function Python() {
+int main() {
+  cout << "Hello DevCanvas!";
+  return 0;
+}
+`;
+
+function Cpp() {
   const [code, setCode] = useState("");
   const [output, setOutput] = useState("");
 
   const handleSubmit = async () => {
-    toast.loading("Running Python code...");
+    toast.loading("Compiling & Executing C++ code...");
     try {
       const response = await fetch(
-        `${import.meta.env.VITE_SERVER_URL}/api/auth/runpy`,
+        `${import.meta.env.VITE_SERVER_URL}/api/auth/runcpp`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -29,11 +36,11 @@ function Python() {
         toast.success("Executed Successfully");
       } else {
         setOutput(data.error);
-        toast.error("Execution Error");
+        toast.error("Compilation Error");
       }
-    } catch {
+    } catch (err) {
       toast.remove();
-      setOutput("Server Error");
+      setOutput("Error in communication with server");
       toast.error("Server Error");
     }
   };
@@ -49,10 +56,10 @@ function Python() {
   };
 
   const codeToFile = () => {
-    const blob = new Blob([code], { type: "text/python" });
+    const blob = new Blob([code], { type: "text/cpp" });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
-    link.download = "DevCanvas-main.py";
+    link.download = "DevCanvas-main.cpp";
     link.click();
     toast.success("File Downloaded");
   };
@@ -63,11 +70,12 @@ function Python() {
 
       <div className="flex-1 flex flex-col">
         <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-800 bg-zinc-900">
-          <h2 className="text-indigo-400 font-semibold text-lg">main.py</h2>
+          <h2 className="text-indigo-400 font-semibold text-lg">main.cpp</h2>
 
           <div className="flex items-center gap-3">
             <button
               onClick={copyContent}
+              title="Copy code"
               className="p-2 cursor-pointer rounded-md border border-zinc-700 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 transition"
             >
               <FaCopy size={20} />
@@ -75,6 +83,7 @@ function Python() {
 
             <button
               onClick={codeToFile}
+              title="Download file"
               className="p-2 cursor-pointer rounded-md border border-zinc-700 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 transition"
             >
               <FaDownload size={20} />
@@ -84,7 +93,7 @@ function Python() {
 
             <button
               onClick={handleSubmit}
-              className="px-6 cursor-pointer py-2 bg-indigo-500 hover:bg-indigo-600 rounded-md font-semibold text-sm shadow-lg transition"
+              className="px-7 cursor-pointer py-2 bg-indigo-500 hover:bg-indigo-600 rounded-md font-semibold text-sm shadow-lg transition"
             >
               RUN
             </button>
@@ -94,8 +103,8 @@ function Python() {
         <div className="flex flex-1 gap-4 p-5">
           <div className="w-1/2 bg-zinc-900 border border-zinc-800 rounded-xl p-4 flex flex-col">
             <p className="text-sm text-zinc-400 mb-2">
-              🐍 Press <span className="text-indigo-400 font-medium">TAB</span>{" "}
-              to insert starter Python code
+              💻 Press <span className="text-indigo-400 font-medium">TAB</span>{" "}
+              to insert starter C++ code
             </p>
 
             <textarea
@@ -105,10 +114,10 @@ function Python() {
               onKeyDown={(e) => {
                 if (e.key === "Tab" && code.trim() === "") {
                   e.preventDefault();
-                  setCode(DEFAULT_PY_CODE);
+                  setCode(DEFAULT_CPP_CODE);
                 }
               }}
-              placeholder="Start typing Python code..."
+              placeholder="Start typing C++ code..."
             />
           </div>
 
@@ -124,7 +133,7 @@ function Python() {
             </div>
 
             <pre className="flex-1 overflow-auto text-[16px] text-green-400 font-mono whitespace-pre-wrap">
-              {output || "# Output will appear here"}
+              {output || "// Output will appear here"}
             </pre>
           </div>
         </div>
@@ -133,4 +142,4 @@ function Python() {
   );
 }
 
-export default Python;
+export default Cpp;

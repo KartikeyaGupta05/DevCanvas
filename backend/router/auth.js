@@ -1,10 +1,17 @@
 import express from "express";
 import bcrypt from "bcryptjs";
 
-import { generatePyfile } from "./generatePy.js";
 import { executepy } from "./executepy.js";
 import { executeDart } from "./executeDart.js";
+import { executeC } from "./executeC.js";
+import { executeCpp } from "./executeCpp.js";
+import { executeJava } from "./executeJava.js";
+
+import { generatePyfile } from "./generatePy.js";
 import { generateDartfile } from "./generateDart.js";
+import { generateCfile } from "./generateC.js";
+import { generateCppfile } from "./generateCpp.js";
+import { generateJavafile } from "./generateJava.js";
 
 import User from "../model/userSchema.js";
 
@@ -55,6 +62,63 @@ router.post("/rundart", async (req, res) => {
     const match = errorMessage.match(/Error: ([^\n]+)/);
     const realError = match ? match[0] : "Unknown error occurred";
     res.status(500).json({ error: realError });
+  }
+});
+
+/*================= C RUN ================= */
+router.post("/runc", async (req, res) => {
+  const {
+    language = "c",
+    code = '#include <stdio.h> \nint main() { printf("Hello, World!\\n"); return 0; }',
+  } = req.body;
+ if (!code) {
+    return res.status(400).json({ success: false, error: "Please Enter Code" });
+  }
+
+  try {
+    const file = await generateCfile(code);
+    const output = await executeC(file);
+    res.json({ output });
+  } catch (err) {
+    res.status(500).json({ error: err.toString() });
+  }
+});
+
+/*================= CPP RUN ================= */
+router.post("/runcpp", async (req, res) => {
+  const {
+    language = "cpp",
+    code = '#include <iostream>\nint main() { std::cout << "Hello, World!" << std::endl; return 0; }',
+  } = req.body;
+  if (!code) {
+    return res.status(400).json({ success: false, error: "Please Enter Code" });
+  }
+
+  try {
+    const file = await generateCppfile(code);
+    const output = await executeCpp(file);
+    res.json({ output });
+  } catch (err) {
+    res.status(500).json({ error: err.toString() });
+  }
+});
+
+/*================= JAVA RUN ================= */
+router.post("/runjava", async (req, res) => {
+  const {
+    language = "java",
+    code = 'public class Main { public static void main(String[] args) { System.out.println("Hello, World!"); } }',
+  } = req.body;
+  if (!code) {
+    return res.status(400).json({ success: false, error: "Please Enter Code" });
+  }
+
+  try {
+    const file = await generateJavafile(code);
+    const output = await executeJava(file);
+    res.json({ output });
+  } catch (err) {
+    res.status(500).json({ error: err.toString() });
   }
 });
 

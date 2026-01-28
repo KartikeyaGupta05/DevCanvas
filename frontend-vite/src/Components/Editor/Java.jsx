@@ -1,151 +1,139 @@
 import React, { useState } from "react";
 import LangList from "./LangList";
-// import voice from '../../assets/image.png'
-import axios from "axios";
 import { toast } from "react-hot-toast";
-import copy_icon from "../../assets/copy_icon.gif";
-import download_icon from "../../assets/download_logo.png";
+import { FaCopy, FaDownload } from "react-icons/fa";
+
+const DEFAULT_JAVA_CODE = `public class Main {
+  public static void main(String[] args) {
+    System.out.println("Hello DevCanvas!");
+  }
+}
+`;
 
 function Java() {
   const [code, setCode] = useState("");
   const [output, setOutput] = useState("");
 
   const handleSubmit = async () => {
-    toast.loading("Please Wait while File is executing");
-    const payload = {
-      language: "dart",
-      code,
-    };
-
+    toast.loading("Compiling & Executing Java code...");
     try {
-      // const {data} = await axios.post("http://localhost:5000/rundart",payload)
       const response = await fetch(
-        `${import.meta.env.VITE_SERVER_URL}/api/auth/rundart`,
+        `${import.meta.env.VITE_SERVER_URL}/api/auth/runjava`,
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(payload),
-        },
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ code }),
+        }
       );
 
       const data = await response.json();
+      toast.remove();
+
       if (response.ok) {
-        toast.remove();
         setOutput(data.output);
-        toast.success("Executed  Successfully");
+        toast.success("Executed Successfully");
       } else {
         setOutput(data.error);
-        toast.remove();
-        toast.error("An Error Occured");
+        toast.error("Compilation Error");
       }
-      // console.log("Faizan Alam",data);
-      // toast.remove();
-      // toast.success('Executed Successfully.')
-      // setCode("");
-    } catch (err) {
+    } catch {
       toast.remove();
-      toast.error(
-        "Error in communication with the server.Please check is flutter sdk is installed",
-      );
-      setOutput("Error in communication with the server");
-      console.log(`error is in dart.js .The error : ${err}`);
+      setOutput("Server Error");
+      toast.error("Server Error");
     }
   };
 
   const clear = () => {
+    setOutput("");
     toast.success("Output Cleared");
-    const box = document.querySelector(".rightplayground p");
-    box.innerHTML = "";
   };
 
   const copyContent = () => {
-    toast.success("Copied");
     navigator.clipboard.writeText(code);
+    toast.success("Code Copied");
   };
 
   const codeToFile = () => {
-    // const text = document.querySelector('.codemirror').value;
-    const text = document.querySelector("#dart").value;
-    // const text = setcode(code);
-    const blob = new Blob([text], { type: "text/dart" });
-
+    const blob = new Blob([code], { type: "text/java" });
     const link = document.createElement("a");
-    link.href = window.URL.createObjectURL(blob);
-    link.download = "DevCanvas-dart.dart";
-    toast.success("File is Downloading...");
+    link.href = URL.createObjectURL(blob);
+    link.download = "DevCanvas-Main.java";
     link.click();
+    toast.success("File Downloaded");
   };
 
   return (
-    <>
-      <div className="voiceContainer">
-        <div className="voiceBody wholeeditorBody">
-          <div className="leftLang">
-            <LangList leftcolordart="white" />
+    <div className="flex h-screen bg-slate-950 text-zinc-100">
+      <LangList />
+
+      <div className="flex-1 flex flex-col">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-800 bg-zinc-900">
+          <h2 className="text-indigo-400 font-semibold text-lg">Main.java</h2>
+
+          <div className="flex items-center gap-3">
+            <button
+              onClick={copyContent}
+              className="p-2 cursor-pointer rounded-md border border-zinc-700 bg-zinc-800 hover:bg-zinc-700 transition"
+            >
+              <FaCopy size={20} />
+            </button>
+
+            <button
+              onClick={codeToFile}
+              className="p-2 cursor-pointer rounded-md border border-zinc-700 bg-zinc-800 hover:bg-zinc-700 transition"
+            >
+              <FaDownload size={20} />
+            </button>
+
+            <div className="h-6 w-px bg-zinc-700 mx-2" />
+
+            <button
+              onClick={handleSubmit}
+              className="px-8 cursor-pointer py-2.5 bg-indigo-500 hover:bg-indigo-600 rounded-md font-semibold text-sm shadow-lg transition"
+            >
+              RUN
+            </button>
           </div>
-          <div className="PlaygroundMain">
-            <div className="runHeaderJS">
-              <div className="jsleftheaderfile jsfile">
-                <mark>
-                  <h2>index.dart</h2>
-                </mark>
-                <div className="runbtn">
-                  <button className="vbtn">
-                    <img
-                      className="voicebtn"
-                      onClick={copyContent}
-                      src={copy_icon}
-                      alt="voice"
-                    />
-                  </button>
-                  <button className="vbtn">
-                    <img
-                      className="voicebtn"
-                      onClick={codeToFile}
-                      src={download_icon}
-                      alt="voice"
-                    />
-                  </button>
-                  <button className="btn" onClick={handleSubmit}>
-                    RUN
-                  </button>
-                </div>
-              </div>
-              <div className="jsrightheaderfile jsfile">
-                <mark>
-                  <p>OUTPUT</p>
-                </mark>
-                <button className="clear" onClick={clear}>
-                  Clear
-                </button>
-              </div>
+        </div>
+
+        <div className="flex flex-1 gap-4 p-5">
+          <div className="w-1/2 bg-zinc-900 border border-zinc-800 rounded-xl p-4 flex flex-col">
+            <p className="text-sm text-zinc-400 mb-2">
+              💻 Press <span className="text-indigo-400 font-medium">TAB</span> to insert starter Java code
+            </p>
+
+            <textarea
+              className="flex-1 bg-transparent outline-none resize-none font-mono text-[16px] leading-6 text-zinc-100"
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Tab" && code.trim() === "") {
+                  e.preventDefault();
+                  setCode(DEFAULT_JAVA_CODE);
+                }
+              }}
+              placeholder="Start typing Java code..."
+            />
+          </div>
+
+          <div className="w-1/2 bg-zinc-900 border border-zinc-800 rounded-xl p-4 flex flex-col">
+            <div className="flex justify-between items-center mb-2">
+              <p className="text-sm text-zinc-400">🖥 Output</p>
+              <button
+                onClick={clear}
+                className="text-sm cursor-pointer text-indigo-400 hover:underline"
+              >
+                Clear
+              </button>
             </div>
-            <div className="jsplayground playground">
-              <div className="leftplayground snippet">
-                <textarea
-                  className="dartpython"
-                  name="dart"
-                  id="dart"
-                  value={code}
-                  onChange={(e) => {
-                    setCode(e.target.value);
-                  }}
-                  placeholder='void main(){print("Hello DevCanvas Players");}'
-                ></textarea>
-              </div>
-              <h1 className="invisible">
-                <mark>Output</mark>
-              </h1>
-              <div className="rightplayground snippet">
-                <p>{output}</p>
-              </div>
-            </div>
+
+            <pre className="flex-1 overflow-auto text-[16px] text-green-400 font-mono whitespace-pre-wrap">
+              {output || "// Output will appear here"}
+            </pre>
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }
 

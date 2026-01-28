@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@tailwindcss/vite": "^4.1.18",
     "@uiw/codemirror-extensions-basic-setup": "^4.25.4",
     "@uiw/codemirror-extensions-classname": "^4.25.4",
     "@uiw/codemirror-extensions-events": "^4.25.4",
@@ -27,6 +28,7 @@
     "react-speech-recognition": "^4.0.1",
     "react-use-clipboard": "^1.0.9",
     "regenerator-runtime": "^0.14.1",
+    "tailwindcss": "^4.1.18",
     "tesseract.js": "^7.0.0",
     "yup": "^1.7.1"
   },

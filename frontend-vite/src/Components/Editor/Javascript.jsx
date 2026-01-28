@@ -1,275 +1,129 @@
-import React, { useEffect, useState } from 'react';
-import LangList from '../Editor/LangList';
-import copy_icon from '../../assets/copy_icon.gif';
-import download_icon from '../../assets/download_logo.png';
-import { toast } from 'react-hot-toast';
+import React, { useEffect, useState } from "react";
+import LangList from "./LangList";
+import { toast } from "react-hot-toast";
+import { FaCopy, FaDownload } from "react-icons/fa";
 
-const data = new Date()
-let DayName;
-if(data.getDay() === 1){
-  DayName =  "Monday";
-}
-else if(data.getDay() === 2){
-  DayName =  "Tuesday"; 
-}
-else if(data.getDay() === 3){
-  DayName =  "Wednesday";
-}
-else if(data.getDay() === 4){
-  DayName =  "Thursday";
-}
-else if(data.getDay() === 5){
-  DayName =  "Friday";
-}
-
-else if(data.getDay() === 6){
-  DayName =  "Saturday";
-}
-else if(data.getDay() === 0){
-  DayName =  "Sunday"
-}
-else{
-  DayName =  "DevCanvas";
-}
+const DEFAULT_JS_CODE = `console.log("Hello DevCanvas");`;
 
 function Javascript() {
+  const [code, setCode] = useState("");
+  const [output, setOutput] = useState("");
 
-  const [code,setcode] = useState("");
-
-  const runCode = ()=>{
-      try{
-        toast.success("Code Execution Started")
-        let textCode = document.querySelector(".dartpython").value;
-        eval(textCode);
-      }
-      catch(err){
-        toast.error("Please Enter Valid Code")
-        console.log(`${err}`);
-      }
-};
-
-
-
-const originalConsoleLog = console.log;
-
-useEffect(()=>{
-  const consoleOutput = document.getElementById('consoleOutput');
-  const btn = document.querySelector('.btn1');
-
-  const consoleLoghandler = function(message){
-    const paragraph = document.createElement('p');
-    paragraph.textContent = message;
-    consoleOutput.appendChild(paragraph);
-    originalConsoleLog.apply(console);
-  };
-
-  btn.addEventListener('click',()=>{
-    consoleOutput.innerHTML = "";
-  });
-
-  console.log = consoleLoghandler;
-
-  return ()=>{
-    btn.removeEventListener('click',()=>{
-      consoleOutput.innerHTML = "";
-    });
-    console.log = originalConsoleLog;
-  };
-},[]);
-
-// useEffect(()=>{
-//   console.log = function(message){
-//     const consoleOutput = document.getElementById('consoleOutput');
-//       const btn = document.querySelector('.btn1');
-//       btn.addEventListener('click',()=>{
-//         consoleOutput.innerText = "";
-//       })
-//       const paragraph = document.createElement('p');
-//       paragraph.textContent = message;
-//       consoleOutput.appendChild(paragraph);
-//       // originalConsoleLog.apply(cons5ole,arguments);
-//       originalConsoleLog.apply(console);
-//     };
-//   })
-
-  const clear = ()=>{
-    toast.success("Output Cleared")
-    const box = document.querySelector("#consoleOutput");
-    box.innerHTML = "";
-  }
-
-  const copyContent = ()=>{
-    navigator.clipboard.writeText(code);
-    toast.success("Copied to Clipboard")
-  }
- 
-  const codeToFile = ()=>{
-    toast.success("Download Started");
-
-    const text = document.querySelector(".dartpython").value;
-    const blob = new Blob([text],{type:"text/javascript"});
-
-    const link = document.createElement("a");
-    link.href = window.URL.createObjectURL(blob);
-    const FileCodeName = `DevCanvas-(${DayName})`;
-
-    link.download = FileCodeName;
-    link.click();
-  }
-
-  return (
-    <>
-      <div className="jsContainer"> 
-            <div className="jsBody wholeeditorBody">
-                <div className="leftLang">
-                    <LangList leftcolorjs="white"/>
-                </div>
-                <div className="PlaygroundMain">
-                  <div className='runHeaderJS'>
-                    <div className='jsleftheaderfile jsfile'>
-                      <mark><h2>index.js</h2></mark>
-                      <div className='runbtn'>
-                      <button className='vbtn'>
-                      <img className='voicebtn' onClick={copyContent} src={copy_icon} alt='CopyClip'/>
-                      </button>
-                      <button className='vbtn'>
-                      <img className='voicebtn' onClick={codeToFile} src={download_icon} alt='DownLoadCode'/>
-                      </button>
-                        {/* <button className='btn btn1' onClick={handleSubmit}>RUN</button> */}
-                        <button className='btn btn1' onClick={runCode}>RUN</button>
-                      </div>
-                    </div>
-                    <div className='jsrightheaderfile jsfile'>
-                      <mark><p>OUTPUT</p></mark>
-                      <button className='clear' onClick={clear}>Clear</button>
-                    </div>
-                  </div>
-                  <div className='jsplayground playground'>
-                    <div className='leftplayground snippet'>
-                      <textarea className='dartpython' data-testid="jsTextarea" name="javascript" id="javascript" value={code} onChange={(e)=>setcode(e.target.value)} placeholder='console.log("Hello DevCanvas Coders");'></textarea>
-                    </div>
-                    <h1 className="invisible">
-                      <mark>Output</mark>
-                    </h1>
-                    <div className='rightplayground snippet' id='consoleOutput' data-testid="consoleOutput" >
-                    {/* <p>{output}</p> */}
-                    </div>
-                  </div>
-                </div>
-            </div>
-        </div>
-    </>
-  )
-}
-
-export default Javascript
-
-
-/*
-Previous code
-
-import React, { useEffect, useState } from 'react';
-import LangList from '../Editor/LangList';
-import voice from '../../assets/image.png';
-import CodeMirror from '@uiw/react-codemirror';
-import { darcula } from '@uiw/codemirror-theme-darcula';
-import { javascript } from '@codemirror/lang-javascript';
-import copy_icon from '../../assets/copy_icon.gif';
-import download_icon from '../../assets/download_logo.png';
-
-
-function Javascript() {
-
-  const [code,setcode] = useState("");
-  const [output,setOutput] = useState("");
-
-  const runCode = ()=>{
+  const runCode = () => {
     try {
-      const result = eval(code);
-      if (result !== undefined) {
-        setOutput(result.toString());
-      } else {
-        setOutput(output);
-      }
-    } catch (error) {
-      setOutput(error.toString());
+      toast.loading("Executing JavaScript...");
+      setOutput("");
+
+      const originalLog = console.log;
+      console.log = (...args) => {
+        setOutput((prev) => prev + args.join(" ") + "\n");
+        originalLog(...args);
+      };
+
+      eval(code);
+
+      console.log = originalLog;
+      toast.remove();
+      toast.success("Executed Successfully");
+    } catch (err) {
+      toast.remove();
+      setOutput(err.toString());
+      toast.error("Execution Error");
     }
   };
 
-  const originalConsoleLog = console.log;
+  const copyContent = () => {
+    navigator.clipboard.writeText(code);
+    toast.success("Code Copied");
+  };
 
-  useEffect(()=>{
-    console.log = function(message){
-      const consoleOutput = document.getElementById('consoleOutput');
-      const btn = document.querySelector('.btn1');
-      btn.addEventListener('click',()=>{
-        consoleOutput.innerText = "";
-      })
-      const paragraph = document.createElement('p');
-      // const paragraph = document.querySelector(".rightplayground")
-      paragraph.textContent = message;
+  const codeToFile = () => {
+    const blob = new Blob([code], { type: "text/javascript" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "DevCanvas-main.js";
+    link.click();
+    toast.success("File Downloaded");
+  };
 
-      consoleOutput.appendChild(paragraph);
-      originalConsoleLog.apply(console,arguments);
-    };
-  },[])
-
-  const clear = ()=>{
-    const box = document.querySelector("#consoleOutput");
-    box.innerHTML = "";
-  }
+  const clearOutput = () => {
+    setOutput("");
+    toast.success("Output Cleared");
+  };
 
   return (
-    <>
-      <div className="jsContainer"> 
-            <div className="jsBody">
-                <div className="leftLang">
-                    <LangList/>
-                </div>
-                <div className="PlaygroundMain">
-                  <div className='runHeaderJS'>
-                    <div className='jsleftheaderfile jsfile'>
-                      <mark><h2>index.js</h2></mark>
-                      <div className='runbtn'>
-                      <button className='vbtn'>
-                      <img className='voicebtn' src={copy_icon} alt='voice'/>
-                      </button>
-                      <button className='vbtn'>
-                      <img className='voicebtn' src={download_icon} alt='voice'/>
-                      </button>
-                        <button className='btn btn1' onClick={runCode}>RUN</button>
-                      </div>
-                    </div>
-                    <div className='jsrightheaderfile jsfile'>
-                      <mark><p>OUTPUT</p></mark>
-                      <button className='clear' onClick={clear}>Clear</button>
-                    </div>
-                  </div>
-                  <div className='jsplayground playground'>
-                    <div className='leftplayground snippet'>
-                      <CodeMirror
-                        value={code}
-                        height='80vh'
-                        theme={darcula}
-                        // extensions={[javascript({jsx:true})]}
-                        extensions={[javascript()]}
-                        onChange={(value) =>{
-                          setcode(value)
-                        }}
-                      />
-                    </div>
-                    <div className='rightplayground snippet' id='consoleOutput' >
-                      {/* {setcode} */
-                      /* {setOutput} */
-                      /* {output} 
-                      </div>
-                      </div>
-                    </div>
-                </div>
+    <div className="flex h-screen bg-slate-950 text-zinc-100">
+      <LangList />
+
+      <div className="flex-1 flex flex-col">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-800 bg-zinc-900">
+          <h2 className="text-indigo-400 font-semibold text-lg">main.js</h2>
+
+          <div className="flex items-center gap-3">
+            <button
+              onClick={copyContent}
+              className="p-2 cursor-pointer rounded-md border border-zinc-700 bg-zinc-800 hover:bg-zinc-700 transition"
+            >
+              <FaCopy size={18} />
+            </button>
+
+            <button
+              onClick={codeToFile}
+              className="p-2 cursor-pointer rounded-md border border-zinc-700 bg-zinc-800 hover:bg-zinc-700 transition"
+            >
+              <FaDownload size={18} />
+            </button>
+
+            <div className="h-6 w-px bg-zinc-700 mx-2" />
+
+            <button
+              onClick={runCode}
+              className="px-6 cursor-pointer py-2 bg-indigo-500 hover:bg-indigo-600 rounded-md font-semibold text-sm"
+            >
+              RUN
+            </button>
+          </div>
+        </div>
+
+        <div className="flex flex-1 gap-4 p-5">
+          <div className="w-1/2 bg-zinc-900 border border-zinc-800 rounded-xl p-4 flex flex-col">
+            <p className="text-sm text-zinc-400 mb-2">
+              💻 Press <span className="text-indigo-400">TAB</span> to insert starter code
+            </p>
+
+            <textarea
+              className="flex-1 bg-transparent outline-none resize-none font-mono text-[16px] text-zinc-100"
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Tab" && code.trim() === "") {
+                  e.preventDefault();
+                  setCode(DEFAULT_JS_CODE);
+                }
+              }}
+              placeholder="Write JavaScript here..."
+            />
+          </div>
+
+          <div className="w-1/2 bg-zinc-900 border border-zinc-800 rounded-xl p-4 flex flex-col">
+            <div className="flex justify-between items-center mb-2">
+              <p className="text-sm text-zinc-400">🖥 Output</p>
+              <button
+                onClick={clearOutput}
+                className="text-sm cursor-pointer text-indigo-400 hover:underline"
+              >
+                Clear
+              </button>
             </div>
-        </>
-      )
-    }
-    
-    export default Javascript
-*/
+
+            <pre className="flex-1 overflow-auto font-mono text-green-400 whitespace-pre-wrap">
+              {output || "// Output will appear here"}
+            </pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default Javascript;

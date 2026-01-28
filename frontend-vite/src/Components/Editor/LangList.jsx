@@ -1,49 +1,39 @@
-import React from 'react';
-import mic from '../../assets/mic.png';
-import js from '../../assets/js.png'
-import html from '../../assets/html.png';
-import css from '../../assets/css.png';
-import python from '../../assets/python.png';
-import java from '../../assets/java.png';
-import image from '../../assets/image.png';
-import { NavLink } from 'react-router-dom';
+import { NavLink } from "react-router-dom";
+import js from "../../assets/js.png";
+import html from "../../assets/html.png";
+import css from "../../assets/css.png";
+import dart from "../../assets/dart.png";
+import python from "../../assets/python.png";
+import java from "../../assets/java.png";
+import c from "../../assets/c.png";
+import cpp from "../../assets/cpp.png";
+import image from "../../assets/imgtotext.png";
+import mic from "../../assets/mic.png";
 
+const Item = ({ to, icon }) => (
+  <NavLink to={to} className="p-2 rounded-lg hover:bg-indigo-500/20 transition">
+    <img src={icon} alt="" className="w-14 h-14" />
+  </NavLink>
+);
 
-function LangList(props) {
+function LangList() {
   return (
-    <> 
-    <div className="LangContainer">
-            <div className="langSection languages">
-                <div className="languageBorder" style={{'backgroundColor':`${props.leftcolorjs}`}}>
-                        <NavLink to="/editor/javascript"><img src={js} alt="JLanguage " /></NavLink>
-                        {/* <a href="/editor/javascript"><img src={js} alt="JLanguage " /></a> */}
-                </div>
-                <div className="languageBorder" style={{'backgroundColor':`${props.leftcolorhtml}`}}>
-                        <NavLink to="/editor/html"><img className={props.html} src={html} alt="Language " /></NavLink>
-                </div>
-                <div className="languageBorder" style={{'backgroundColor':`${props.leftcolorpy}`}}>
-                        {/* <a href="/editor/python"><img className={props.py} src={python} alt="Language "  /></a> */}
-                        <NavLink to="/editor/python"><img className={props.py} src={python} alt="Language "  /></NavLink>
-                </div>
-                <div className="languageBorder" style={{'backgroundColor':`${props.leftcolorhtml}`}}>
-                        <NavLink to="/editor/css"><img className={props.html} src={css} alt="Language "/></NavLink>
-                </div>
-                <div className="languageBorder" style={{'backgroundColor':`${props.leftcolordart}`}}>
-                        <NavLink to="/editor/java"><img className={props.dart} src={java} alt="Language "/></NavLink>
-                        {/* <a href="/editor/java"><img className={props.dart} src={java} alt="Language "/></a> */}
-                </div>
-            </div>
-            <div className="FeatureSection languages">
-                <div className="languageBorder" style={{'backgroundColor':`${props.leftcolorv}`}}>
-                    <NavLink to="/editor/voice2text"><img src={image} alt="feature "  /></NavLink>
-                </div>
-                <div className="languageBorder" style={{'backgroundColor':`${props.leftcolori}`}}>
-                    <NavLink to="/editor/image2text"><img src={mic} alt="feaute"  /></NavLink>
-                </div>
-            </div>
-    </div>
-    </>
-  )
+    <aside className="w-20 bg-zinc-900 border-r border-zinc-800 flex flex-col items-center py-4 gap-4">
+      <Item to="/editor/javascript" icon={js} />
+      <Item to="/editor/html" icon={html} />
+      <Item to="/editor/css" icon={css} />
+      <Item to="/editor/python" icon={python} />
+      <Item to="/editor/java" icon={java} />
+      <Item to="/editor/c" icon={c} />
+      <Item to="/editor/cpp" icon={cpp} />
+      <Item to="/editor/dart" icon={dart} />
+
+      <div className="mt-auto flex flex-col gap-4">
+        <Item to="/editor/voice2text" icon={mic} />
+        <Item to="/editor/image2text" icon={image} />
+      </div>
+    </aside>
+  );
 }
 
-export default LangList
+export default LangList;

@@ -6,7 +6,10 @@ import Voice2Text from "./Components/Editor/Voice2Text";
 import Image2Text from "./Components/Editor/Image2Text";
 import Python from "./Components/Editor/Python";
 import Html from "./Components/Editor/Html";
+import Dart from "./Components/Editor/Dart";
 import Java from "./Components/Editor/Java";
+import Cpp from "./Components/Editor/CPP";
+import C from "./Components/Editor/C";
 import JavaScript from "./Components/Editor/Javascript";
 import Errorpage from "./Components/Screens/Errorpage";
 import Homepage from "./Components/Screens/Homepage";
@@ -45,7 +48,10 @@ function App() {
           <Route path="/editor/javascript" element={<JavaScript />} />
           <Route path="/editor/html" element={<Html />} />
           <Route path="/editor/css" element={<Html />} />
+          <Route path="/editor/dart" element={<Dart />} />
           <Route path="/editor/java" element={<Java />} />
+          <Route path="/editor/cpp" element={<Cpp />} />
+          <Route path="/editor/c" element={<C />} />
           <Route path="/editor/voice2text" element={<Voice2Text />} />
           <Route path="/editor/image2text" element={<Image2Text />} />
           <Route path="*" element={<Errorpage />} />

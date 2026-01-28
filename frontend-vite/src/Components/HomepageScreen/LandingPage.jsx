@@ -8,7 +8,15 @@ function LandingPage() {
       <img src={blob} alt="" className="blob_a blob2" />
       <div className="landingInfo">
         <h1>DevCanvas</h1>
-        <p>Build, run, and experiment with code — directly in your browser.</p>
+
+        <p className="heroSubtitle">
+          Build, run, and experiment with code — directly in your browser.
+        </p>
+
+        <p className="heroDesc">
+          A modern developer playground supporting Python, Dart, OCR-based
+          input, and voice-powered coding.
+        </p>
 
         <div
           style={{
