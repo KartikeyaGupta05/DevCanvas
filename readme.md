@@ -2,7 +2,7 @@
 
 DevCanvas is a web-based code execution platform that allows users to write, run, and experiment with code directly in the browser.
 
-It supports multiple programming languages along with advanced input features to improve developer productivity.
+It supports multiple programming languages along with advanced input features to imPprove developer productivity.
 
 ---
 

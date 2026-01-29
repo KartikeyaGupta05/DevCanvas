@@ -2,6 +2,9 @@ import React, { useState } from "react";
 import LangList from "./LangList";
 import { toast } from "react-hot-toast";
 import { FaCopy, FaDownload } from "react-icons/fa";
+import AIButton from "../AI/AIButton";
+import AIPanel from "../AI/AIPanel";
+import { useAI } from "../AI/useAI";
 
 const DEFAULT_CPP_CODE = `#include <iostream>
 using namespace std;
@@ -15,6 +18,11 @@ int main() {
 function Cpp() {
   const [code, setCode] = useState("");
   const [output, setOutput] = useState("");
+  const [showAI, setShowAI] = useState(false);
+  const { askAI, loading, result } = useAI();
+
+  const isError =
+    output && /error|failed|warning|segmentation|exception/i.test(output);
 
   const handleSubmit = async () => {
     toast.loading("Compiling & Executing C++ code...");
@@ -25,7 +33,7 @@ function Cpp() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ code }),
-        }
+        },
       );
 
       const data = await response.json();
@@ -73,6 +81,26 @@ function Cpp() {
           <h2 className="text-indigo-400 font-semibold text-lg">main.cpp</h2>
 
           <div className="flex items-center gap-3">
+            <AIButton
+              label={
+                loading
+                  ? "Thinking..."
+                  : isError
+                    ? "Explain Error"
+                    : "Improve Code"
+              }
+              disabled={loading || !code.trim()}
+              onClick={() => {
+                setShowAI(true);
+                askAI({
+                  language: "C++",
+                  code,
+                  output,
+                  mode: isError ? "error" : "optimize",
+                });
+              }}
+            />
+
             <button
               onClick={copyContent}
               title="Copy code"
@@ -138,6 +166,22 @@ function Cpp() {
           </div>
         </div>
       </div>
+
+      {showAI && (
+        <AIPanel
+          loading={loading}
+          result={result}
+          onClose={() => setShowAI(false)}
+          onAsk={(question) =>
+            askAI({
+              language: "C++",
+              code,
+              output: question,
+              mode: "followup",
+            })
+          }
+        />
+      )}
     </div>
   );
 }

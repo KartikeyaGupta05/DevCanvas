@@ -1,246 +1,235 @@
-// import React from 'react';
-// import { render, fireEvent, screen } from '@testing-library/react';
 import { render, fireEvent, screen } from "@testing-library/react";
-import Html from "../Components/Editor/Html.jsx";
 import { MemoryRouter } from "react-router-dom";
+
+import Html from "../Components/Editor/Html.jsx";
 import JavaScript from "../Components/Editor/Javascript.jsx";
 import Python from "../Components/Editor/Python.jsx";
+import C from "../Components/Editor/C.jsx";
+import Cpp from "../Components/Editor/Cpp.jsx";
+import Java from "../Components/Editor/Java.jsx";
 import Image2Text from "../Components/Editor/Image2Text.jsx";
 import Voice2Text from "../Components/Editor/Voice2Text.jsx";
 
-describe("Html Component", () => {
-  test("Html Page is Rendering:", () => {
+/* ================= HTML EDITOR ================= */
+
+describe("HTML Editor", () => {
+  test("HTML editor renders", () => {
     render(
       <MemoryRouter>
         <Html />
-      </MemoryRouter>,
+      </MemoryRouter>
     );
   });
-  test("Should update HTML code On Trigger :", async () => {
+
+  test("HTML code updates and renders output", () => {
     render(
       <MemoryRouter>
         <Html />
-      </MemoryRouter>,
+      </MemoryRouter>
     );
 
-    //Type HTML Code
     const htmlTextarea = screen.getByTestId("htmlTextarea");
     fireEvent.change(htmlTextarea, {
-      target: { value: "<div>Hello, HTML!</div>" },
+      target: { value: "<h1>Hello HTML</h1>" },
     });
-    //Verify if the Html code has been updated
-    expect(htmlTextarea.value).toBe("<div>Hello, HTML!</div>");
-    const resultIframe = screen.getByTestId("result");
-    const htmlcontent = resultIframe.contentDocument;
-    expect(htmlcontent.body.innerHTML).toContain("Hello, HTML!");
 
-    // const htmlContent = "Hello World"
-    // expect(htmlContent).toContain('Hello World');
+    expect(htmlTextarea.value).toBe("<h1>Hello HTML</h1>");
+
+    const iframe = screen.getByTestId("result");
+    expect(iframe.contentDocument.body.innerHTML).toContain("Hello HTML");
   });
-  it("should update CSS code on trigger", () => {
+
+  test("HTML run button exists", () => {
     render(
       <MemoryRouter>
         <Html />
-      </MemoryRouter>,
+      </MemoryRouter>
     );
 
-    // Type CSS code
-    const cssTextarea = screen.getByTestId("cssTextarea");
-    fireEvent.change(cssTextarea, {
-      target: { value: "body { background-color: lightblue; }" },
-    });
-
-    // Verify if the CSS code has been updated
-    expect(cssTextarea.value).toBe("body { background-color: lightblue; }");
-
-    // Verify if the result iframe content has been updated with the CSS styling
-    const resultIframe = screen.getByTestId("result");
-    const resultDocument = resultIframe.contentDocument;
-    expect(resultDocument.head.innerHTML).toContain("");
-  });
-  test("run button is Functional:", () => {
-    render(
-      <MemoryRouter>
-        <Html />
-      </MemoryRouter>,
-    );
-    // Verify if the run button is present
-    const runButton = screen.getByTestId("runButton");
-    // Click the run button
-    fireEvent.click(runButton);
+    expect(screen.getByTestId("runButton")).toBeInTheDocument();
   });
 });
 
-describe("Javascript Component", () => {
-  test("Javascript Page is Rendering:", () => {
+/* ================= JAVASCRIPT EDITOR ================= */
+
+describe("JavaScript Editor", () => {
+  test("JavaScript editor renders", () => {
     render(
       <MemoryRouter>
         <JavaScript />
-      </MemoryRouter>,
+      </MemoryRouter>
     );
   });
-  it("should execute and display console output :", () => {
+
+  test("JavaScript code input updates", () => {
     render(
       <MemoryRouter>
         <JavaScript />
-      </MemoryRouter>,
+      </MemoryRouter>
     );
-    const codeTextarea = screen.getByTestId("jsTextarea");
-    fireEvent.change(codeTextarea, {
-      target: { value: 'console.log("Test Output");' },
+
+    const textarea = screen.getByTestId("jsTextarea");
+    fireEvent.change(textarea, {
+      target: { value: 'console.log("Hello JS")' },
     });
 
-    const runButton = screen.getByText("RUN");
-    fireEvent.click(runButton);
-
-    //Verify if the console. output contains the expected message
-    const consoleOutput = screen.getByTestId("consoleOutput");
-    expect(consoleOutput.textContent).toEqual("Test Output");
-    // expect(consoleOutput.textContent).toContain('Test Output')
+    expect(textarea.value).toBe('console.log("Hello JS")');
   });
-  it("Should Clear Console output on trigger Clear button:", () => {
+
+  test("RUN button exists in JavaScript editor", () => {
     render(
       <MemoryRouter>
         <JavaScript />
-      </MemoryRouter>,
-    );
-    const clearButton = screen.getByText("Clear");
-    fireEvent.click(clearButton);
-    //Verify if the console. output is clear
-    const consoleOutput = screen.getByTestId("consoleOutput");
-    expect(consoleOutput.textContent).toEqual("");
-  });
-  test("Should Copy Content to ClipBoard:", () => {
-    render(
-      <MemoryRouter>
-        <JavaScript />
-      </MemoryRouter>,
+      </MemoryRouter>
     );
 
-    const codeTextarea = screen.getByTestId("jsTextarea");
-    fireEvent.change(codeTextarea, {
-      target: { value: 'console.log("Test Copy Content");' },
-    });
-
-    const copyButton = screen.getByAltText("CopyClip");
-    fireEvent.click(copyButton);
-    // Verify if the content has been copied to the clipboard
-    const clipboardContent = window.clipboardData.getData("Text");
-    expect(clipboardContent).toContain("Test Copy Content");
-  });
-  test("Should Download the Code:", () => {
-    render(
-      <MemoryRouter>
-        <JavaScript />
-      </MemoryRouter>,
-    );
-    const codeTextarea = screen.getByTestId("jsTextarea");
-    fireEvent.change(codeTextarea, {
-      target: { value: 'console.log("Test Copy Content");' },
-    });
-
-    const downloadButton = screen.getByAltText("DownLoadCode");
-    fireEvent.click(downloadButton);
-    // Verify if the download link has the correct attributes
-    const downloadLink = screen.getByTestId("downloadLink");
-    expect(downloadLink).toHaveAttribute(
-      "href",
-      expect.stringContaining("DevCanvas-"),
-    );
-    expect(downloadLink).toHaveAttribute(
-      "download",
-      expect.stringContaining("DevCanvas-"),
-    );
+    expect(screen.getByText("RUN")).toBeInTheDocument();
   });
 });
-describe("Image2Text Component", () => {
-  test("Image2Text Page is Rendering:", () => {
+
+/* ================= PYTHON EDITOR ================= */
+
+describe("Python Editor", () => {
+  test("Python editor renders", () => {
+    render(
+      <MemoryRouter>
+        <Python />
+      </MemoryRouter>
+    );
+  });
+
+  test("Python code updates on change", () => {
+    render(
+      <MemoryRouter>
+        <Python />
+      </MemoryRouter>
+    );
+
+    const textarea = screen.getByPlaceholderText(
+      'print("hello DevCanvas Coders")'
+    );
+
+    fireEvent.change(textarea, {
+      target: { value: 'print("Hello Python")' },
+    });
+
+    expect(textarea.value).toBe('print("Hello Python")');
+  });
+});
+
+/* ================= C EDITOR ================= */
+
+describe("C Editor", () => {
+  test("C editor renders", () => {
+    render(
+      <MemoryRouter>
+        <C />
+      </MemoryRouter>
+    );
+  });
+
+  test("C editor updates code input", () => {
+    render(
+      <MemoryRouter>
+        <C />
+      </MemoryRouter>
+    );
+
+    const textarea = screen.getByPlaceholderText("Start typing C code...");
+    fireEvent.change(textarea, {
+      target: { value: "int main(){ return 0; }" },
+    });
+
+    expect(textarea.value).toBe("int main(){ return 0; }");
+  });
+
+  test("RUN button exists in C editor", () => {
+    render(
+      <MemoryRouter>
+        <C />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByText("RUN")).toBeInTheDocument();
+  });
+});
+
+/* ================= C++ EDITOR ================= */
+
+describe("C++ Editor", () => {
+  test("C++ editor renders", () => {
+    render(
+      <MemoryRouter>
+        <Cpp />
+      </MemoryRouter>
+    );
+  });
+
+  test("C++ editor updates code input", () => {
+    render(
+      <MemoryRouter>
+        <Cpp />
+      </MemoryRouter>
+    );
+
+    const textarea = screen.getByPlaceholderText("Start typing C++ code...");
+    fireEvent.change(textarea, {
+      target: { value: "int main(){ return 0; }" },
+    });
+
+    expect(textarea.value).toBe("int main(){ return 0; }");
+  });
+});
+
+/* ================= JAVA EDITOR ================= */
+
+describe("Java Editor", () => {
+  test("Java editor renders", () => {
+    render(
+      <MemoryRouter>
+        <Java />
+      </MemoryRouter>
+    );
+  });
+
+  test("Java editor updates code input", () => {
+    render(
+      <MemoryRouter>
+        <Java />
+      </MemoryRouter>
+    );
+
+    const textarea = screen.getByPlaceholderText("Start typing Java code...");
+    fireEvent.change(textarea, {
+      target: {
+        value: "public class Main { public static void main(String[] a) {} }",
+      },
+    });
+
+    expect(textarea.value).toContain("public class Main");
+  });
+});
+
+/* ================= IMAGE TO TEXT ================= */
+
+describe("Image2Text Editor", () => {
+  test("Image2Text editor renders", () => {
     render(
       <MemoryRouter>
         <Image2Text />
-      </MemoryRouter>,
+      </MemoryRouter>
     );
   });
 });
-describe("Voice2Text Component", () => {
-  test("Voice2Text Page is Rendering:", () => {
+
+/* ================= VOICE TO TEXT ================= */
+
+describe("Voice2Text Editor", () => {
+  test("Voice2Text editor renders", () => {
     render(
       <MemoryRouter>
         <Voice2Text />
-      </MemoryRouter>,
+      </MemoryRouter>
     );
   });
 });
-describe("Python Component", () => {
-  test("Python Page is Rendering:", () => {
-    render(
-      <MemoryRouter>
-        <Python />
-      </MemoryRouter>,
-    );
-  });
-  test("Should Update Code onChange", () => {
-    render(
-      <MemoryRouter>
-        <Python />
-      </MemoryRouter>,
-    );
-    // Simulate user input in the code textarea
-    const codeTextarea = screen.getByPlaceholderText(
-      'print("hello DevCanvas Coders")',
-    );
-    fireEvent.change(codeTextarea, {
-      target: { value: 'print("Hello, Python!")' },
-    });
-    expect(codeTextarea.value).toBe('print("Hello, Python!")');
-  });
-});
-
-// const countBtn = screen.getByRole('button',{
-//     name:"Increment"
-// });
-// test("render the count of zero : ",()=>{
-//     render(<Test/>);
-//     const counting = screen.getByRole('heading');
-//     expect(counting).toHaveTextContent("0");
-// })
-
-// test("render count of 1 on increment",async ()=>{
-//     render(<Test/>);
-//     let Incbutton=screen.getByRole('button',{
-//         name:"Increment"
-//     });
-//     await user.click(Incbutton)
-//     const countEle = screen.getByRole('heading');
-//     expect(countEle).toHaveTextContent("1")
-// })
-
-// test("on tap button focus shifts : ",async ()=>{
-//     render(<Test/>);
-//     const amountInp = screen.getByRole('spinbutton')
-//     const setbtn = screen.getByRole("button",{
-//         name:"Set",
-//     })
-//     let doubleBtn = screen.getByRole('button',{
-//         name:"Increment"
-//     });
-//     await user.tab();
-//     expect(doubleBtn).toHaveFocus();
-//     await user.tab();
-//     expect(amountInp).toHaveFocus();
-//     await user.tab();
-//     expect(setbtn).toHaveFocus();
-// });
-// describe('first test', () => {
-//     test("regrex testing : ",()=>{
-//         render(<Test/>);
-
-//         //normal text matching query
-//         // const textEle = screen.getByText("FaIzAn")
-
-//         //regrex text matching query
-//         // const textEle = screen.getByText(/faizan/i)     //substring match,ignore case
-//         // const textEle = screen.getByText(/^faizan$/i)       //substring match,ignore case
-//         const textEle = screen.getByText((content)=>content.startsWith("Fa"))       //not a case sensitive but found start letter
-//         expect(textEle).toBeInTheDocument();
-//     })

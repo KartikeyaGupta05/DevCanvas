@@ -2,12 +2,20 @@ import React, { useState } from "react";
 import LangList from "./LangList";
 import { toast } from "react-hot-toast";
 import { FaCopy, FaDownload } from "react-icons/fa";
+import AIButton from "../AI/AIButton";
+import AIPanel from "../AI/AIPanel";
+import { useAI } from "../AI/useAI";
 
 const DEFAULT_PY_CODE = `print("Hello DevCanvas!")`;
 
 function Python() {
   const [code, setCode] = useState("");
   const [output, setOutput] = useState("");
+  const [showAI, setShowAI] = useState(false);
+  const { askAI, loading, result } = useAI();
+
+  const isError =
+    output && /error|failed|warning|segmentation|exception/i.test(output);
 
   const handleSubmit = async () => {
     toast.loading("Running Python code...");
@@ -18,7 +26,7 @@ function Python() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ code }),
-        }
+        },
       );
 
       const data = await response.json();
@@ -66,6 +74,26 @@ function Python() {
           <h2 className="text-indigo-400 font-semibold text-lg">main.py</h2>
 
           <div className="flex items-center gap-3">
+            <AIButton
+              label={
+                loading
+                  ? "Thinking..."
+                  : isError
+                    ? "Explain Error"
+                    : "Improve Code"
+              }
+              disabled={loading || !code.trim()}
+              onClick={() => {
+                setShowAI(true);
+                askAI({
+                  language: "Python",
+                  code,
+                  output,
+                  mode: isError ? "error" : "optimize",
+                });
+              }}
+            />
+
             <button
               onClick={copyContent}
               className="p-2 cursor-pointer rounded-md border border-zinc-700 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 transition"
@@ -129,6 +157,21 @@ function Python() {
           </div>
         </div>
       </div>
+      {showAI && (
+        <AIPanel
+          loading={loading}
+          result={result}
+          onClose={() => setShowAI(false)}
+          onAsk={(question) =>
+            askAI({
+              language: "Python",
+              code,
+              output: question,
+              mode: "followup",
+            })
+          }
+        />
+      )}
     </div>
   );
 }

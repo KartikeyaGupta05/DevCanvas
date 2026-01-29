@@ -46,24 +46,12 @@ router.post("/runpy", async (req, res) => {
 
 /* ================= DART RUN ================= */
 router.post("/rundart", async (req, res) => {
-  const { language = "dart", code = "void main(){print('hello dart');}" } =
-    req.body;
-
-  if (!code) {
-    return res.status(400).json({ success: false, error: "Please Enter Code" });
-  }
-
-  try {
-    const filepath = await generateDartfile(language, code);
-    const output = await executeDart(filepath);
-    res.json({ filepath, output });
-  } catch (err) {
-    const errorMessage = err.toString();
-    const match = errorMessage.match(/Error: ([^\n]+)/);
-    const realError = match ? match[0] : "Unknown error occurred";
-    res.status(500).json({ error: realError });
-  }
+  return res.status(501).json({
+    error:
+      "Dart execution is currently disabled. Dart SDK is not installed on the server. You can write, copy, and download Dart code."
+  });
 });
+
 
 /*================= C RUN ================= */
 router.post("/runc", async (req, res) => {

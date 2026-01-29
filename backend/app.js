@@ -1,11 +1,13 @@
+import dotenv from "dotenv";
+dotenv.config();
 import express from "express";
 import cors from "cors";
-import dotenv from "dotenv";
 
 import router from "./router/auth.js";
+import aiRoutes from "./router/ai.js";
 import { connectDB } from "./db/conn.js";
 
-dotenv.config({ path: "./.env" });
+
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -23,6 +25,7 @@ const consoleURL = (req, res, next) => {
 app.use(consoleURL);
 
 app.use("/api/auth", router);
+app.use("/api", aiRoutes);
 
 app.get("/", (req, res) => {
   res.send("Hello World 🚀");

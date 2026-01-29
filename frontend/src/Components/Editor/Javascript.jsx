@@ -2,12 +2,20 @@ import React, { useEffect, useState } from "react";
 import LangList from "./LangList";
 import { toast } from "react-hot-toast";
 import { FaCopy, FaDownload } from "react-icons/fa";
+import AIButton from "../AI/AIButton";
+import AIPanel from "../AI/AIPanel";
+import { useAI } from "../AI/useAI";
 
 const DEFAULT_JS_CODE = `console.log("Hello DevCanvas");`;
 
 function Javascript() {
   const [code, setCode] = useState("");
   const [output, setOutput] = useState("");
+  const [showAI, setShowAI] = useState(false);
+  const { askAI, loading, result } = useAI();
+
+  const isError =
+    output && /error|failed|warning|segmentation|exception/i.test(output);
 
   const runCode = () => {
     try {
@@ -60,6 +68,26 @@ function Javascript() {
           <h2 className="text-indigo-400 font-semibold text-lg">main.js</h2>
 
           <div className="flex items-center gap-3">
+            <AIButton
+              label={
+                loading
+                  ? "Thinking..."
+                  : isError
+                    ? "Explain Error"
+                    : "Improve Code"
+              }
+              disabled={loading || !code.trim()}
+              onClick={() => {
+                setShowAI(true);
+                askAI({
+                  language: "JavaScript",
+                  code,
+                  output,
+                  mode: isError ? "error" : "optimize",
+                });
+              }}
+            />
+
             <button
               onClick={copyContent}
               className="p-2 cursor-pointer rounded-md border border-zinc-700 bg-zinc-800 hover:bg-zinc-700 transition"
@@ -88,7 +116,8 @@ function Javascript() {
         <div className="flex flex-1 gap-4 p-5">
           <div className="w-1/2 bg-zinc-900 border border-zinc-800 rounded-xl p-4 flex flex-col">
             <p className="text-sm text-zinc-400 mb-2">
-              💻 Press <span className="text-indigo-400">TAB</span> to insert starter code
+              💻 Press <span className="text-indigo-400">TAB</span> to insert
+              starter code
             </p>
 
             <textarea
@@ -122,6 +151,21 @@ function Javascript() {
           </div>
         </div>
       </div>
+      {showAI && (
+        <AIPanel
+          loading={loading}
+          result={result}
+          onClose={() => setShowAI(false)}
+          onAsk={(question) =>
+            askAI({
+              language: "JavaScript",
+              code,
+              output: question,
+              mode: "followup",
+            })
+          }
+        />
+      )}
     </div>
   );
 }

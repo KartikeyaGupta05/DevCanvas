@@ -26,7 +26,7 @@ function LandingPage() {
             justifyContent: "center",
           }}
         >
-          <a href="/editor/python">
+          <a href="/editor/java">
             <button className="btn">Start Coding</button>
           </a>
           {/* <a

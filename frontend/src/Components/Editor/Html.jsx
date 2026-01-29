@@ -3,6 +3,7 @@ import LangList from "./LangList";
 import { toast } from "react-hot-toast";
 import { FaPlay, FaDownload, FaTrash } from "react-icons/fa";
 
+
 const HTML_STARTER = `<!DOCTYPE html>
 <html>
 <head>
@@ -62,6 +63,7 @@ function Html() {
   const cssRef = useRef(null);
   const jsRef = useRef(null);
   const iframeRef = useRef(null);
+
 
   const updatePreview = () => {
     const html = htmlRef.current.value;
