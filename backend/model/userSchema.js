@@ -37,7 +37,6 @@ userSchema.pre('save', async function(next){
         this.password =await bcrypt.hash(this.password,10);
         this.cpassword = await bcrypt.hash(this.cpassword,10);
     }
-    console.log(`The Hash password is :${this.password}`)
     next();
 })
 

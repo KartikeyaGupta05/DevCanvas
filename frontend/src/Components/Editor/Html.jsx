@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from "react";
 import LangList from "./LangList";
 import { toast } from "react-hot-toast";
 import { FaPlay, FaDownload, FaTrash } from "react-icons/fa";
+import Header from "../Header";
 
 
 const HTML_STARTER = `<!DOCTYPE html>
@@ -127,6 +128,8 @@ ${html}
   };
 
   return (
+    <>
+    <Header/>
     <div className="flex h-screen bg-slate-950 text-zinc-100">
       <LangList />
 
@@ -195,6 +198,7 @@ ${html}
         </div>
       </div>
     </div>
+    </>
   );
 }
 

@@ -3,6 +3,7 @@ import LangList from "./LangList";
 import Tesseract from "tesseract.js";
 import { toast } from "react-hot-toast";
 import { FaCopy, FaDownload, FaImage } from "react-icons/fa";
+import Header from "../Header";
 
 function Image2Text() {
   const [image, setImage] = useState(null);
@@ -52,6 +53,8 @@ function Image2Text() {
   };
 
   return (
+    <>
+    <Header/>
     <div className="flex h-screen bg-slate-950 text-zinc-100">
       <LangList />
 
@@ -125,6 +128,7 @@ function Image2Text() {
         </div>
       </div>
     </div>
+    </>
   );
 }
 

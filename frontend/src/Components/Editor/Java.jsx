@@ -5,6 +5,7 @@ import { FaCopy, FaDownload } from "react-icons/fa";
 import AIButton from "../AI/AIButton";
 import AIPanel from "../AI/AIPanel";
 import { useAI } from "../AI/useAI";
+import Header from "../Header";
 
 const DEFAULT_JAVA_CODE = `public class Main {
   public static void main(String[] args) {
@@ -71,6 +72,8 @@ function Java() {
   };
 
   return (
+    <>
+    <Header/>
     <div className="flex h-screen bg-slate-950 text-zinc-100">
       <LangList />
 
@@ -178,6 +181,7 @@ function Java() {
         />
       )}
     </div>
+    </>
   );
 }
 

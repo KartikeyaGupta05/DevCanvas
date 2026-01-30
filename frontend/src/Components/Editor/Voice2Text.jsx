@@ -14,6 +14,7 @@ import {
   FaUpload,
   FaDownload,
 } from "react-icons/fa";
+import Header from "../Header";
 
 function Voice2Text() {
   const [text, setText] = useState("");
@@ -28,6 +29,8 @@ function Voice2Text() {
     dot: ".",
     "new line": "\n",
     "next line": "\n",
+    "open parenthesis": "(",
+    "close parenthesis": ")",
     "open bracket": "(",
     "close bracket": ")",
     "open curly bracket": "{",
@@ -87,11 +90,12 @@ function Voice2Text() {
   };
 
   return (
+    <>
+    <Header/>
     <div className="flex h-screen bg-slate-950 text-zinc-100">
       <LangList />
 
       <div className="flex-1 flex flex-col">
-        {/* HEADER */}
         <div className="flex justify-between items-center px-6 py-4 border-b border-zinc-800 bg-zinc-900">
           <h2 className="text-indigo-400 font-semibold text-lg">voice.txt</h2>
           <span className="text-xs text-zinc-500">Voice → Text</span>
@@ -115,7 +119,7 @@ function Voice2Text() {
                 onClick={startListening}
                 disabled={isRecording}
                 className={`editor-btn ${
-                  isRecording ? "cursor-pointer" : "opacity-50 cursor-not-allowed"
+                  !isRecording ? "cursor-pointer" : "opacity-50 cursor-not-allowed"
                 }`}
               >
                 🎙 Record
@@ -171,6 +175,7 @@ function Voice2Text() {
         </div>
       </div>
     </div>
+    </>
   );
 }
 

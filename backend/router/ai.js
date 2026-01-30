@@ -4,8 +4,6 @@ import express from "express";
 import { GoogleGenAI } from "@google/genai";
 
 const router = express.Router();
-console.log("GEMINI KEY:", process.env.GEMINI_API_KEY);
-
 
 const ai = new GoogleGenAI({
   apiKey: process.env.GEMINI_API_KEY,

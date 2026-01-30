@@ -8,7 +8,7 @@ import Python from "./Components/Editor/Python";
 import Html from "./Components/Editor/Html";
 import Dart from "./Components/Editor/Dart";
 import Java from "./Components/Editor/Java";
-import Cpp from "./Components/Editor/CPP";
+import Cpp from "./Components/Editor/Cpp";
 import C from "./Components/Editor/C";
 import JavaScript from "./Components/Editor/Javascript";
 import Errorpage from "./Components/Screens/Errorpage";
@@ -38,7 +38,6 @@ function App() {
         />
       </div>
       <BrowserRouter>
-        <Header />
         <Routes>
           <Route path="/" element={<Homepage />} />
           <Route path="/register" element={<Register />} />

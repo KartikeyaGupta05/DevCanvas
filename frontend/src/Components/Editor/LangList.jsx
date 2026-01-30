@@ -12,13 +12,13 @@ import mic from "../../assets/mic.png";
 
 const Item = ({ to, icon }) => (
   <NavLink to={to} className="p-2 rounded-lg hover:bg-indigo-500/20 transition">
-    <img src={icon} alt="" className="w-14 h-14" />
+    <img src={icon} alt="" className="w-11 h-11" />
   </NavLink>
 );
 
 function LangList() {
   return (
-    <aside className="w-20 bg-zinc-900 border-r border-zinc-800 flex flex-col items-center py-4 gap-4">
+    <aside className="w-20 bg-zinc-900 border-r border-zinc-800 flex flex-col items-center py-4 gap-3">
       <Item to="/editor/javascript" icon={js} />
       <Item to="/editor/html" icon={html} />
       <Item to="/editor/css" icon={css} />
