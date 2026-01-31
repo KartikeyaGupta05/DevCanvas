@@ -14,48 +14,36 @@ import {
   FaDownload,
 } from "react-icons/fa";
 import Header from "../Header";
+import { phraseToSymbolMap } from "../utils/phraseToSymbolMap";
 
 function Voice2Text() {
   const [text, setText] = useState("");
   const [isRecording, setIsRecording] = useState(false);
   const [, setCopied] = useClipboard(text);
+  const [mediaStream, setMediaStream] = useState(null);
 
-  const phraseToSymbolMap = {
-    semicolon: ";",
-    "semi colon": ";",
-    comma: ",",
-    colon: ":",
-    dot: ".",
-    "new line": "\n",
-    "next line": "\n",
-    "open parenthesis": "(",
-    "close parenthesis": ")",
-    "open bracket": "(",
-    "close bracket": ")",
-    "open curly bracket": "{",
-    "close curly bracket": "}",
-    "open square bracket": "[",
-    "close square bracket": "]",
-    "open single quote": "'",
-    "close single quote": "'",
-    "open double quote": '"',
-    "close double quote": '"',
-  };
-
-  const {
-    transcript,
-    resetTranscript,
-    browserSupportsSpeechRecognition,
-  } = useSpeechRecognition();
+  const { transcript, resetTranscript, browserSupportsSpeechRecognition } =
+    useSpeechRecognition();
 
   useEffect(() => {
     let processed = transcript;
-    for (const [key, value] of Object.entries(phraseToSymbolMap)) {
+
+    Object.entries(phraseToSymbolMap).forEach(([key, value]) => {
       const regex = new RegExp(`\\b${key}\\b`, "gi");
       processed = processed.replace(regex, value);
-    }
+    });
+
     setText(processed);
   }, [transcript]);
+
+  useEffect(() => {
+    return () => {
+      SpeechRecognition.stopListening();
+      if (mediaStream) {
+        mediaStream.getTracks().forEach((track) => track.stop());
+      }
+    };
+  }, [mediaStream]);
 
   useEffect(() => {
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -65,7 +53,8 @@ function Voice2Text() {
 
   const startListening = async () => {
     try {
-      await navigator.mediaDevices.getUserMedia({ audio: true });
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      setMediaStream(stream);
 
       setIsRecording(true);
       toast.success("Recording started");
@@ -80,8 +69,15 @@ function Voice2Text() {
   };
 
   const stopListening = () => {
-    setIsRecording(false);
     SpeechRecognition.stopListening();
+    resetTranscript();
+
+    if (mediaStream) {
+      mediaStream.getTracks().forEach((track) => track.stop());
+      setMediaStream(null);
+    }
+
+    setIsRecording(false);
     toast.success("Recording stopped");
   };
 
@@ -105,8 +101,8 @@ function Voice2Text() {
       <>
         <Header />
         <div className="p-6 text-red-400 bg-black h-screen">
-          Speech recognition is not supported in this browser.  
-          Please use Google Chrome or Microsoft Edge.
+          Speech recognition is not supported in this browser. Please use Google
+          Chrome or Microsoft Edge.
         </div>
       </>
     );
@@ -127,21 +123,18 @@ function Voice2Text() {
 
           <div className="flex flex-1 gap-4 p-5">
             <div className="w-1/2 bg-zinc-900 border border-zinc-800 rounded-xl p-6 flex flex-col items-center justify-center gap-6">
-
               {window.location.protocol !== "https:" &&
                 window.location.hostname !== "localhost" && (
                   <div className="w-full p-3 text-sm rounded bg-yellow-500/10 border border-yellow-500 text-yellow-400 text-center">
-                    Voice input requires HTTPS.  
-                    Microphone access may be blocked.
+                    Voice input requires HTTPS. Microphone access may be
+                    blocked.
                   </div>
                 )}
 
               <FaMicrophone
                 size={64}
                 className={
-                  isRecording
-                    ? "text-red-500 animate-pulse"
-                    : "text-indigo-400"
+                  isRecording ? "text-red-500 animate-pulse" : "text-indigo-400"
                 }
               />
 
@@ -176,8 +169,8 @@ function Voice2Text() {
               </div>
 
               <p className="text-xs text-zinc-500 text-center">
-                If mic doesn't start:  
-                Click 🔒 in address bar → Allow Microphone → Reload
+                If mic doesn't start: Click 🔒 in address bar → Allow Microphone
+                → Reload
               </p>
 
               <div className="w-full border-t border-zinc-800 my-2" />
