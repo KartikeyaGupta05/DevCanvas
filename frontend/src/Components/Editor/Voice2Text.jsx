@@ -14,7 +14,7 @@ import {
   FaDownload,
 } from "react-icons/fa";
 import Header from "../Header";
-import { phraseToSymbolMap } from "../utils/phraseToSymbolMap";
+import { phraseToSymbolMap } from "../../utils/phraseToSymbolMap";
 
 function Voice2Text() {
   const [text, setText] = useState("");
