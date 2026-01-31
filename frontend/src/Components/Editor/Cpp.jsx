@@ -75,117 +75,127 @@ function Cpp() {
 
   return (
     <>
-    <Header/>
-    <div className="flex h-screen bg-slate-950 text-zinc-100">
-      <LangList />
+      <Header />
+      <div className="flex h-screen bg-slate-950 text-zinc-100">
+        <LangList />
 
-      <div className="flex-1 flex flex-col">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-800 bg-zinc-900">
-          <h2 className="text-indigo-400 font-semibold text-lg">main.cpp</h2>
+        <div className="flex-1 flex flex-col">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-800 bg-zinc-900">
+            <h2 className="text-indigo-400 font-semibold text-lg">main.cpp</h2>
 
-          <div className="flex items-center gap-3">
-            <AIButton
-              label={
-                loading
-                  ? "Thinking..."
-                  : isError
-                    ? "Explain Error"
-                    : "Improve Code"
-              }
-              disabled={loading || !code.trim()}
-              onClick={() => {
-                setShowAI(true);
-                askAI({
-                  language: "C++",
-                  code,
-                  output,
-                  mode: isError ? "error" : "optimize",
-                });
-              }}
-            />
-
-            <button
-              onClick={copyContent}
-              title="Copy code"
-              className="p-2 cursor-pointer rounded-md border border-zinc-700 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 transition"
-            >
-              <FaCopy size={20} />
-            </button>
-
-            <button
-              onClick={codeToFile}
-              title="Download file"
-              className="p-2 cursor-pointer rounded-md border border-zinc-700 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 transition"
-            >
-              <FaDownload size={20} />
-            </button>
-
-            <div className="h-6 w-px bg-zinc-700 mx-2" />
-
-            <button
-              onClick={handleSubmit}
-              className="px-7 cursor-pointer py-2 bg-indigo-500 hover:bg-indigo-600 rounded-md font-semibold text-sm shadow-lg transition"
-            >
-              RUN
-            </button>
-          </div>
-        </div>
-
-        <div className="flex flex-1 gap-4 p-5">
-          <div className="w-1/2 bg-zinc-900 border border-zinc-800 rounded-xl p-4 flex flex-col">
-            <p className="text-sm text-zinc-400 mb-2">
-              💻 Press <span className="text-indigo-400 font-medium">TAB</span>{" "}
-              to insert starter C++ code
-            </p>
-
-            <textarea
-              className="flex-1 bg-transparent outline-none resize-none font-mono text-[16px] leading-6 text-zinc-100"
-              value={code}
-              onChange={(e) => setCode(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Tab" && code.trim() === "") {
-                  e.preventDefault();
-                  setCode(DEFAULT_CPP_CODE);
+            <div className="flex items-center gap-3">
+              <AIButton
+                label={
+                  loading
+                    ? "Thinking..."
+                    : isError
+                      ? "Explain Error"
+                      : "Improve Code"
                 }
-              }}
-              placeholder="Start typing C++ code..."
-            />
-          </div>
+                disabled={loading || !code.trim()}
+                onClick={() => {
+                  setShowAI(true);
+                  askAI({
+                    language: "C++",
+                    code,
+                    output,
+                    mode: isError ? "error" : "optimize",
+                  });
+                }}
+              />
 
-          <div className="w-1/2 bg-zinc-900 border border-zinc-800 rounded-xl p-4 flex flex-col">
-            <div className="flex justify-between items-center mb-2">
-              <p className="text-sm text-zinc-400">🖥 Output</p>
               <button
-                onClick={clear}
-                className="text-sm cursor-pointer text-indigo-400 hover:underline"
+                onClick={copyContent}
+                title="Copy code"
+                className="p-2 cursor-pointer rounded-md border border-zinc-700 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 transition"
               >
-                Clear
+                <FaCopy size={20} />
+              </button>
+
+              <button
+                onClick={codeToFile}
+                title="Download file"
+                className="p-2 cursor-pointer rounded-md border border-zinc-700 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 transition"
+              >
+                <FaDownload size={20} />
+              </button>
+
+              <div className="h-6 w-px bg-zinc-700 mx-2" />
+
+              <button
+                onClick={handleSubmit}
+                className="px-7 cursor-pointer py-2 bg-indigo-500 hover:bg-indigo-600 rounded-md font-semibold text-sm shadow-lg transition"
+              >
+                RUN
               </button>
             </div>
+          </div>
 
-            <pre className="flex-1 overflow-auto text-[16px] text-green-400 font-mono whitespace-pre-wrap">
-              {output || "// Output will appear here"}
-            </pre>
+          <div className="flex flex-1 gap-4 p-5">
+            <div className="w-1/2 bg-zinc-900 border border-zinc-800 rounded-xl p-4 flex flex-col">
+              <p className="text-sm text-zinc-400 mb-2">
+                💻 Press{" "}
+                <span className="text-indigo-400 font-medium">TAB</span> to
+                insert starter C++ code
+              </p>
+
+              <textarea
+                className="flex-1 bg-transparent outline-none resize-none font-mono text-[16px] leading-6 text-zinc-100"
+                value={code}
+                onChange={(e) => setCode(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Tab" && code.trim() === "") {
+                    e.preventDefault();
+                    setCode(DEFAULT_CPP_CODE);
+                  }
+                }}
+                placeholder="Start typing C++ code..."
+              />
+            </div>
+
+            <div className="w-1/2 bg-zinc-900 border border-zinc-800 rounded-xl p-4 flex flex-col">
+              <div className="flex justify-between items-center mb-2">
+                <p className="text-sm text-zinc-400">🖥 Output</p>
+                <button
+                  onClick={clear}
+                  className="text-sm cursor-pointer text-indigo-400 hover:underline"
+                >
+                  Clear
+                </button>
+              </div>
+
+              {import.meta.env.PROD && (
+                <div className="mx-5 mt-4 mb-2 rounded-lg border border-yellow-500/40 bg-yellow-500/10 px-4 py-3 text-sm text-yellow-300">
+                  ⚠ <span className="font-semibold">Production Notice:</span>
+                  C++ execution is disabled on the deployed version due to
+                  cloud sandbox limitations. This editor works fully in local
+                  development.
+                </div>
+              )}
+
+              <pre className="flex-1 overflow-auto text-[16px] text-green-400 font-mono whitespace-pre-wrap">
+                {output || "// Output will appear here"}
+              </pre>
+            </div>
           </div>
         </div>
-      </div>
 
-      {showAI && (
-        <AIPanel
-          loading={loading}
-          result={result}
-          onClose={() => setShowAI(false)}
-          onAsk={(question) =>
-            askAI({
-              language: "C++",
-              code,
-              output: question,
-              mode: "followup",
-            })
-          }
-        />
-      )}
-    </div>
+        {showAI && (
+          <AIPanel
+            loading={loading}
+            result={result}
+            onClose={() => setShowAI(false)}
+            onAsk={(question) =>
+              askAI({
+                language: "C++",
+                code,
+                output: question,
+                mode: "followup",
+              })
+            }
+          />
+        )}
+      </div>
     </>
   );
 }

@@ -48,10 +48,9 @@ router.post("/runpy", async (req, res) => {
 router.post("/rundart", async (req, res) => {
   return res.status(501).json({
     error:
-      "Dart execution is currently disabled. Dart SDK is not installed on the server. You can write, copy, and download Dart code."
+      "Dart execution is currently disabled. Dart SDK is not installed on the server. You can write, copy, and download Dart code.",
   });
 });
-
 
 /*================= C RUN ================= */
 router.post("/runc", async (req, res) => {
@@ -59,7 +58,7 @@ router.post("/runc", async (req, res) => {
     language = "c",
     code = '#include <stdio.h> \nint main() { printf("Hello, World!\\n"); return 0; }',
   } = req.body;
- if (!code) {
+  if (!code) {
     return res.status(400).json({ success: false, error: "Please Enter Code" });
   }
 
@@ -118,56 +117,73 @@ router.post("/register", async (req, res) => {
     return res.status(422).json({ error: "Fill all required fields" });
   }
 
+  if (password !== cpassword) {
+    return res.status(400).json({ error: "Passwords do not match" });
+  }
+
   try {
-    const userExist = await User.findOne({ email });
+    const userExist = await User.findOne({
+      email: email.toLowerCase().trim(),
+    });
 
     if (userExist) {
       return res.status(409).json({ error: "Email already exists" });
     }
 
-    if (password !== cpassword) {
-      return res.status(400).json({ error: "Passwords do not match" });
-    }
+    const user = new User({
+      username,
+      email: email.toLowerCase().trim(),
+      password,
+      role,
+    });
 
-    const user = new User({ username, email, password, role });
     await user.save();
 
-    res.status(201).json({ success: "User registered successfully" });
+    res.status(201).json({ message: "User registered successfully" });
   } catch (err) {
     console.error("Register Error:", err);
     res.status(500).json({ error: "Server error" });
   }
 });
 
+
 /* ================= LOGIN ================= */
 router.post("/login", async (req, res) => {
-  const { username, password } = req.body;
+  const { email, password } = req.body;
 
-  if (!username || !password) {
-    return res.status(400).json({ error: "Enter all fields" });
+  if (!email || !password) {
+    return res.status(400).json({ error: "Please fill all fields" });
   }
 
   try {
-    const user = await User.findOne({ username });
+    const user = await User.findOne({ email: email.toLowerCase().trim() });
 
     if (!user) {
-      return res.status(401).json({ error: "Invalid credentials" });
+      return res.status(401).json({ error: "Invalid email or password" });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
-      return res.status(401).json({ error: "Invalid credentials" });
+      return res.status(401).json({ error: "Invalid email or password" });
     }
 
     const token = await user.generateAuthToken();
 
     res.cookie("jwt_users_token", token, {
       httpOnly: true,
-      maxAge: 30 * 24 * 60 * 60 * 1000,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
     });
 
-    res.status(200).json({ message: "Login successful" });
+    res.status(200).json({
+      message: "Login successful",
+      user: {
+        id: user._id,
+        email: user.email,
+      },
+    });
   } catch (err) {
     console.error("Login Error:", err);
     res.status(500).json({ error: "Server error" });

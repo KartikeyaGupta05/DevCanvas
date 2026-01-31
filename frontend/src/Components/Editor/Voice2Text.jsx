@@ -8,7 +8,6 @@ import LangList from "./LangList";
 import { toast } from "react-hot-toast";
 import {
   FaMicrophone,
-  FaStop,
   FaCopy,
   FaTrash,
   FaUpload,
@@ -19,7 +18,7 @@ import Header from "../Header";
 function Voice2Text() {
   const [text, setText] = useState("");
   const [isRecording, setIsRecording] = useState(false);
-  const [isCopied, setCopied] = useClipboard(text);
+  const [, setCopied] = useClipboard(text);
 
   const phraseToSymbolMap = {
     semicolon: ";",
@@ -43,8 +42,11 @@ function Voice2Text() {
     "close double quote": '"',
   };
 
-  const { transcript, resetTranscript, browserSupportsSpeechRecognition } =
-    useSpeechRecognition();
+  const {
+    transcript,
+    resetTranscript,
+    browserSupportsSpeechRecognition,
+  } = useSpeechRecognition();
 
   useEffect(() => {
     let processed = transcript;
@@ -55,17 +57,26 @@ function Voice2Text() {
     setText(processed);
   }, [transcript]);
 
-  if (!browserSupportsSpeechRecognition) {
-    return <p className="p-4">Browser does not support speech recognition.</p>;
-  }
+  useEffect(() => {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      toast.error("Microphone not supported on this browser");
+    }
+  }, []);
 
-  const startListening = () => {
-    setIsRecording(true);
-    toast.success("Recording started");
-    SpeechRecognition.startListening({
-      continuous: true,
-      language: "en-IN",
-    });
+  const startListening = async () => {
+    try {
+      await navigator.mediaDevices.getUserMedia({ audio: true });
+
+      setIsRecording(true);
+      toast.success("Recording started");
+
+      SpeechRecognition.startListening({
+        continuous: true,
+        language: "en-IN",
+      });
+    } catch (err) {
+      toast.error("Microphone permission denied");
+    }
   };
 
   const stopListening = () => {
@@ -89,92 +100,134 @@ function Voice2Text() {
     toast.success("File downloaded");
   };
 
+  if (!browserSupportsSpeechRecognition) {
+    return (
+      <>
+        <Header />
+        <div className="p-6 text-red-400 bg-black h-screen">
+          Speech recognition is not supported in this browser.  
+          Please use Google Chrome or Microsoft Edge.
+        </div>
+      </>
+    );
+  }
+
   return (
     <>
-    <Header/>
-    <div className="flex h-screen bg-slate-950 text-zinc-100">
-      <LangList />
+      <Header />
 
-      <div className="flex-1 flex flex-col">
-        <div className="flex justify-between items-center px-6 py-4 border-b border-zinc-800 bg-zinc-900">
-          <h2 className="text-indigo-400 font-semibold text-lg">voice.txt</h2>
-          <span className="text-xs text-zinc-500">Voice → Text</span>
-        </div>
+      <div className="flex h-screen bg-slate-950 text-zinc-100">
+        <LangList />
 
-        <div className="flex flex-1 gap-4 p-5">
-          <div className="w-1/2 bg-zinc-900 border border-zinc-800 rounded-xl p-6 flex flex-col items-center justify-center gap-6">
-            <FaMicrophone
-              size={64}
-              className={
-                isRecording ? "text-red-500 animate-pulse" : "text-indigo-400"
-              }
-            />
-
-            <p className="text-zinc-400 text-center">
-              Click record and speak clearly
-            </p>
-
-            <div className="flex gap-4">
-              <button
-                onClick={startListening}
-                disabled={isRecording}
-                className={`editor-btn ${
-                  !isRecording ? "cursor-pointer" : "opacity-50 cursor-not-allowed"
-                }`}
-              >
-                🎙 Record
-              </button>
-
-              <button
-                onClick={stopListening}
-                disabled={!isRecording}
-                className={`editor-btn ${
-                  !isRecording ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
-                }`}
-              >
-                ⏹ Stop
-              </button>
-            </div>
-
-            <div className="w-full border-t border-zinc-800 my-2" />
-
-            <div className="text-center opacity-60">
-              <FaUpload className="mx-auto mb-1" />
-              <p className="text-sm">Upload Audio</p>
-              <p className="text-xs text-zinc-500">(coming soon)</p>
-            </div>
-
-            <p className="text-xs text-zinc-500 italic">
-              Tip: say “semicolon”, “new line”, “open bracket”
-            </p>
+        <div className="flex-1 flex flex-col">
+          <div className="flex justify-between items-center px-6 py-4 border-b border-zinc-800 bg-zinc-900">
+            <h2 className="text-indigo-400 font-semibold text-lg">voice.txt</h2>
+            <span className="text-xs text-zinc-500">Voice → Text</span>
           </div>
 
-          <div className="w-1/2 bg-zinc-900 border border-zinc-800 rounded-xl p-4 flex flex-col">
-            <div className="flex justify-between items-center mb-2">
-              <p className="text-sm text-zinc-400">🖥 Output</p>
-              <div className="flex gap-2">
-                <button onClick={setCopied} className="editor-btn cursor-pointer">
-                  <FaCopy /> Copy
+          <div className="flex flex-1 gap-4 p-5">
+            <div className="w-1/2 bg-zinc-900 border border-zinc-800 rounded-xl p-6 flex flex-col items-center justify-center gap-6">
+
+              {window.location.protocol !== "https:" &&
+                window.location.hostname !== "localhost" && (
+                  <div className="w-full p-3 text-sm rounded bg-yellow-500/10 border border-yellow-500 text-yellow-400 text-center">
+                    Voice input requires HTTPS.  
+                    Microphone access may be blocked.
+                  </div>
+                )}
+
+              <FaMicrophone
+                size={64}
+                className={
+                  isRecording
+                    ? "text-red-500 animate-pulse"
+                    : "text-indigo-400"
+                }
+              />
+
+              <p className="text-zinc-400 text-center">
+                Click record and speak clearly
+              </p>
+
+              <div className="flex gap-4">
+                <button
+                  onClick={startListening}
+                  disabled={isRecording}
+                  className={`editor-btn ${
+                    !isRecording
+                      ? "cursor-pointer"
+                      : "opacity-50 cursor-not-allowed"
+                  }`}
+                >
+                  🎙 Record
                 </button>
-                <button onClick={downloadText} className="editor-btn cursor-pointer">
-                  <FaDownload /> Download
-                </button>
-                <button onClick={clearText} className="editor-btn cursor-pointer danger">
-                  <FaTrash /> Clear
+
+                <button
+                  onClick={stopListening}
+                  disabled={!isRecording}
+                  className={`editor-btn ${
+                    !isRecording
+                      ? "opacity-50 cursor-not-allowed"
+                      : "cursor-pointer"
+                  }`}
+                >
+                  ⏹ Stop
                 </button>
               </div>
+
+              <p className="text-xs text-zinc-500 text-center">
+                If mic doesn't start:  
+                Click 🔒 in address bar → Allow Microphone → Reload
+              </p>
+
+              <div className="w-full border-t border-zinc-800 my-2" />
+
+              <div className="text-center opacity-60">
+                <FaUpload className="mx-auto mb-1" />
+                <p className="text-sm">Upload Audio</p>
+                <p className="text-xs text-zinc-500">(coming soon)</p>
+              </div>
+
+              <p className="text-xs text-zinc-500 italic">
+                Tip: say “semicolon”, “new line”, “open bracket”
+              </p>
             </div>
 
-            <textarea
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              className="flex-1 bg-transparent resize-none outline-none font-mono text-lg text-green-400"
-              placeholder="// Converted text will appear here"
-            />
+            <div className="w-1/2 bg-zinc-900 border border-zinc-800 rounded-xl p-4 flex flex-col">
+              <div className="flex justify-between items-center mb-2">
+                <p className="text-sm text-zinc-400">🖥 Output</p>
+                <div className="flex gap-2">
+                  <button
+                    onClick={setCopied}
+                    className="editor-btn cursor-pointer"
+                  >
+                    <FaCopy /> Copy
+                  </button>
+                  <button
+                    onClick={downloadText}
+                    className="editor-btn cursor-pointer"
+                  >
+                    <FaDownload /> Download
+                  </button>
+                  <button
+                    onClick={clearText}
+                    className="editor-btn cursor-pointer danger"
+                  >
+                    <FaTrash /> Clear
+                  </button>
+                </div>
+              </div>
+
+              <textarea
+                value={text}
+                onChange={(e) => setText(e.target.value)}
+                className="flex-1 bg-transparent resize-none outline-none font-mono text-lg text-green-400"
+                placeholder="// Converted text will appear here"
+              />
+            </div>
           </div>
         </div>
       </div>
-    </div>
     </>
   );
 }
