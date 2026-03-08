@@ -197,14 +197,14 @@ function Java() {
                 </button>
               </div>
 
-              {import.meta.env.PROD && (
+              {/* {import.meta.env.PROD && (
                 <div className="mx-5 mt-4 mb-2 rounded-lg border border-yellow-500/40 bg-yellow-500/10 px-4 py-3 text-sm text-yellow-300">
                   ⚠ <span className="font-semibold">Production Notice:</span>
                   Java execution is disabled on the deployed version due to
                   cloud sandbox limitations. This editor works fully in local
                   development.
                 </div>
-              )}
+              )} */}
 
               <pre className="flex-1 overflow-auto text-[16px] text-green-400 font-mono whitespace-pre-wrap">
                 {output || "// Output will appear here"}
