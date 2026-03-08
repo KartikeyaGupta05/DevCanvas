@@ -1,20 +1,46 @@
-import { exec } from "child_process";
-import path from "path";
+import axios from "axios";
 
-export const executeJava = ({ filepath }) => {
-  const dir = path.dirname(filepath);
+export const executeJava = async ({ code, input }) => {
+  try {
+    const language_id = 62;
 
-  return new Promise((resolve, reject) => {
-    const command = `cd "${dir}" && javac Main.java && java Main`;
-
-    exec(command, (error, stdout, stderr) => {
-      if (error) {
-        return reject(stderr || error.message);
+    const submission = await axios.post(
+      "https://ce.judge0.com/submissions?base64_encoded=false",
+      {
+        source_code: code,
+        language_id,
+        stdin: input || ""
       }
-      if (stderr) {
-        return reject(stderr);
-      }
-      resolve(stdout);
-    });
-  });
+    );
+
+    const token = submission.data.token;
+
+    let result;
+    let status;
+
+    do {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      const response = await axios.get(
+        `https://ce.judge0.com/submissions/${token}?base64_encoded=false`
+      );
+
+      result = response.data;
+      status = result.status.description;
+
+    } while (status === "In Queue" || status === "Processing");
+
+    if (result.compile_output) {
+      throw new Error(result.compile_output);
+    }
+
+    if (result.stderr) {
+      throw new Error(result.stderr);
+    }
+
+    return result.stdout;
+
+  } catch (error) {
+    throw error.message || "Execution failed";
+  }
 };

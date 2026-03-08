@@ -8,7 +8,6 @@ import aiRoutes from "./router/ai.js";
 import { connectDB } from "./db/conn.js";
 
 
-
 const app = express();
 const PORT = process.env.PORT || 5000;
 

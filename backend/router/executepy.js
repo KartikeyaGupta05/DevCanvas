@@ -1,31 +1,46 @@
-import { exec } from "child_process";
-import path from "path";
-import { fileURLToPath } from "url";
+import axios from "axios";
 
-// ✅ Fix __dirname in ES Module
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+export const executepy = async ({ code, input }) => {
+  try {
+    const language_id = 71;
 
-export const executepy = (filepath) => {
-  return new Promise((resolve, reject) => {
-    const uniqueName = path.basename(filepath).split(".")[0];
-
-    const wayName = path.join(__dirname, "../python_runner");
-    console.log("📍 Python Runner Location:", wayName);
-
-    exec(`cd "${wayName}" && python ${uniqueName}.py`, (error, stdout, stderr) => {
-      if (error) {
-        console.error("❌ Python execution error:", error);
-        return reject(error);
+    const submission = await axios.post(
+      "https://ce.judge0.com/submissions?base64_encoded=false",
+      {
+        source_code: code,
+        language_id,
+        stdin: input || ""
       }
+    );
 
-      if (stderr) {
-        console.error("⚠️ Python stderr:", stderr);
-        return reject(stderr);
-      }
+    const token = submission.data.token;
 
-      console.log("✅ Python output:", stdout);
-      resolve(stdout);
-    });
-  });
+    let result;
+    let status;
+
+    do {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      const response = await axios.get(
+        `https://ce.judge0.com/submissions/${token}?base64_encoded=false`
+      );
+
+      result = response.data;
+      status = result.status.description;
+
+    } while (status === "In Queue" || status === "Processing");
+
+    if (result.compile_output) {
+      throw new Error(result.compile_output);
+    }
+
+    if (result.stderr) {
+      throw new Error(result.stderr);
+    }
+
+    return result.stdout;
+
+  } catch (error) {
+    throw error.message || "Execution failed";
+  }
 };

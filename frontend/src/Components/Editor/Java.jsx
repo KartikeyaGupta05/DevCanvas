@@ -18,20 +18,30 @@ function Java() {
   const [code, setCode] = useState("");
   const [output, setOutput] = useState("");
   const [showAI, setShowAI] = useState(false);
+  const [input, setInput] = useState("");
   const { askAI, loading, result } = useAI();
 
   const isError =
     output && /error|failed|warning|segmentation|exception/i.test(output);
 
+  const expectsInput =
+    /Scanner|nextInt|nextLine|nextDouble|BufferedReader/.test(code);
   const handleSubmit = async () => {
+    if (expectsInput && !input.trim()) {
+      toast.error("⚠ This Java program expects input. Please provide input.");
+      setOutput("Error: Input required but not provided.");
+      return;
+    }
+
     toast.loading("Compiling & Executing Java code...");
+
     try {
       const response = await fetch(
         `${import.meta.env.VITE_SERVER_URL}/api/auth/runjava`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ code }),
+          body: JSON.stringify({ code, input }),
         },
       );
 
@@ -39,13 +49,13 @@ function Java() {
       toast.remove();
 
       if (response.ok) {
-        setOutput(data.output);
+        setOutput(data.output || data.error || "No output");
         toast.success("Executed Successfully");
       } else {
-        setOutput(data.error);
+        setOutput(data.error || "Execution failed");
         toast.error("Compilation Error");
       }
-    } catch {
+    } catch (err) {
       toast.remove();
       setOutput("Server Error");
       toast.error("Server Error");
@@ -55,6 +65,11 @@ function Java() {
   const clear = () => {
     setOutput("");
     toast.success("Output Cleared");
+  };
+
+  const clearInput = () => {
+    setInput("");
+    toast.success("Input Cleared");
   };
 
   const copyContent = () => {
@@ -150,6 +165,28 @@ function Java() {
             </div>
 
             <div className="w-1/2 bg-zinc-900 border border-zinc-800 rounded-xl p-4 flex flex-col">
+              <div className="mb-3">
+                <div className="flex items-center justify-between mb-1">
+                  <p className="text-sm text-zinc-400 mb-1">📥 Input</p>
+                  <button
+                    onClick={clearInput}
+                    className="text-sm text-indigo-400 hover:underline"
+                  >
+                    Clear
+                  </button>
+                </div>
+                <textarea
+                  className={`w-full bg-zinc-800 border ${
+                    expectsInput && !input.trim()
+                      ? "border-red-500"
+                      : "border-zinc-700"
+                  } rounded-md p-2 text-sm font-mono text-zinc-200 resize-none`}
+                  rows="4"
+                  placeholder="Enter input here..."
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                />
+              </div>
               <div className="flex justify-between items-center mb-2">
                 <p className="text-sm text-zinc-400">🖥 Output</p>
                 <button

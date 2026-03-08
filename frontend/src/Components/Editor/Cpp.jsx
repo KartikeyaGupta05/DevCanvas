@@ -20,20 +20,30 @@ function Cpp() {
   const [code, setCode] = useState("");
   const [output, setOutput] = useState("");
   const [showAI, setShowAI] = useState(false);
+  const [input, setInput] = useState("");
   const { askAI, loading, result } = useAI();
-
+  
   const isError =
-    output && /error|failed|warning|segmentation|exception/i.test(output);
-
+  output && /error|failed|warning|segmentation|exception/i.test(output);
+  
+  const expectsInput = /cin|scanf|getchar|getline/.test(code);
   const handleSubmit = async () => {
+
+    if (expectsInput && !input.trim()) {
+      toast.error("⚠ This program expects input. Please provide input.");
+      setOutput("Error: Input required but not provided.");
+      return;
+    }
+
     toast.loading("Compiling & Executing C++ code...");
+
     try {
       const response = await fetch(
         `${import.meta.env.VITE_SERVER_URL}/api/auth/runcpp`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ code }),
+          body: JSON.stringify({ code, input }),
         },
       );
 
@@ -41,11 +51,11 @@ function Cpp() {
       toast.remove();
 
       if (response.ok) {
-        setOutput(data.output);
+        setOutput(data.output || data.error || "No output");
         toast.success("Executed Successfully");
       } else {
-        setOutput(data.error);
-        toast.error("Compilation Error");
+        setOutput(data.error || "Execution failed");
+        toast.error("Execution Error");
       }
     } catch (err) {
       toast.remove();
@@ -58,6 +68,11 @@ function Cpp() {
     setOutput("");
     toast.success("Output Cleared");
   };
+
+  const clearInput = () => {
+    setInput("");
+    toast.success("Input Cleared");
+  }
 
   const copyContent = () => {
     navigator.clipboard.writeText(code);
@@ -154,6 +169,28 @@ function Cpp() {
             </div>
 
             <div className="w-1/2 bg-zinc-900 border border-zinc-800 rounded-xl p-4 flex flex-col">
+            <div className="mb-3">
+                <div className="flex items-center justify-between mb-1">
+                  <p className="text-sm text-zinc-400 mb-1">📥 Input</p>
+                  <button
+                    onClick={clearInput}
+                    className="text-sm text-indigo-400 hover:underline"
+                  >
+                    Clear
+                  </button>
+                </div>
+                <textarea
+                  className={`w-full bg-zinc-800 border ${
+                    expectsInput && !input.trim()
+                      ? "border-red-500"
+                      : "border-zinc-700"
+                  } rounded-md p-2 text-sm font-mono text-zinc-200 resize-none`}
+                  rows="4"
+                  placeholder="Enter input here..."
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                />
+              </div>
               <div className="flex justify-between items-center mb-2">
                 <p className="text-sm text-zinc-400">🖥 Output</p>
                 <button
@@ -167,8 +204,8 @@ function Cpp() {
               {import.meta.env.PROD && (
                 <div className="mx-5 mt-4 mb-2 rounded-lg border border-yellow-500/40 bg-yellow-500/10 px-4 py-3 text-sm text-yellow-300">
                   ⚠ <span className="font-semibold">Production Notice:</span>
-                  C++ execution is disabled on the deployed version due to
-                  cloud sandbox limitations. This editor works fully in local
+                  C++ execution is disabled on the deployed version due to cloud
+                  sandbox limitations. This editor works fully in local
                   development.
                 </div>
               )}

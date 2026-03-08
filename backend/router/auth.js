@@ -26,45 +26,66 @@ router.get("/", (req, res) => {
 router.use(express.urlencoded({ extended: true }));
 
 router.post("/runpy", async (req, res) => {
-  const { language = "py", code = "print('hello python')" } = req.body;
+  const {
+    language = "py",
+    code = "print('hello python')",
+    input = "",
+  } = req.body;
 
   if (!code) {
     return res.status(400).json({ success: false, error: "Please Enter Code" });
   }
 
   try {
-    const filepath = await generatePyfile(language, code);
-    const output = await executepy(filepath);
-    res.json({ filepath, output });
+    await generatePyfile(language, code);
+    const output = await executepy({ code, input });
+
+    res.json({ output });
   } catch (err) {
-    const errorMessage = err.toString();
-    const match = errorMessage.match(/line \d+\s+([^\n]+)/);
-    const realError = match ? match[0] : "Unknown error occurred";
-    res.status(500).json({ error: realError });
+    res.status(500).json({ error: err.toString() });
   }
 });
 
 /* ================= DART RUN ================= */
 router.post("/rundart", async (req, res) => {
-  return res.status(501).json({
-    error:
-      "Dart execution is currently disabled. Dart SDK is not installed on the server. You can write, copy, and download Dart code.",
-  });
+  const {
+    language = "dart",
+    code = `void main() {
+  print("Hello DevCanvas!");
+}`,
+    input = "",
+  } = req.body;
+
+  if (!code) {
+    return res.status(400).json({ success: false, error: "Please Enter Code" });
+  }
+
+  try {
+    await generateDartfile(code);
+    const output = await executeDart({ code, input });
+
+    res.json({ output });
+  } catch (err) {
+    res.status(500).json({ error: err.toString() });
+  }
 });
 
 /*================= C RUN ================= */
 router.post("/runc", async (req, res) => {
   const {
     language = "c",
-    code = '#include <stdio.h> \nint main() { printf("Hello, World!\\n"); return 0; }',
+    code = '#include <stdio.h>\nint main() { printf("Hello, World!\\n"); return 0; }',
+    input = "",
   } = req.body;
+
   if (!code) {
     return res.status(400).json({ success: false, error: "Please Enter Code" });
   }
 
   try {
-    const file = await generateCfile(code);
-    const output = await executeC(file);
+    await generateCfile(code);
+    const output = await executeC({ code, input });
+
     res.json({ output });
   } catch (err) {
     res.status(500).json({ error: err.toString() });
@@ -76,14 +97,17 @@ router.post("/runcpp", async (req, res) => {
   const {
     language = "cpp",
     code = '#include <iostream>\nint main() { std::cout << "Hello, World!" << std::endl; return 0; }',
+    input = "",
   } = req.body;
+
   if (!code) {
     return res.status(400).json({ success: false, error: "Please Enter Code" });
   }
 
   try {
-    const file = await generateCppfile(code);
-    const output = await executeCpp(file);
+    await generateCppfile(code);
+    const output = await executeCpp({ code, input });
+
     res.json({ output });
   } catch (err) {
     res.status(500).json({ error: err.toString() });
@@ -94,15 +118,22 @@ router.post("/runcpp", async (req, res) => {
 router.post("/runjava", async (req, res) => {
   const {
     language = "java",
-    code = 'public class Main { public static void main(String[] args) { System.out.println("Hello, World!"); } }',
+    code = `public class Main {
+  public static void main(String[] args) {
+    System.out.println("Hello, World!");
+  }
+}`,
+    input = "",
   } = req.body;
+
   if (!code) {
     return res.status(400).json({ success: false, error: "Please Enter Code" });
   }
 
   try {
-    const file = await generateJavafile(code);
-    const output = await executeJava(file);
+    await generateJavafile(code);
+    const output = await executeJava({ code, input });
+
     res.json({ output });
   } catch (err) {
     res.status(500).json({ error: err.toString() });
@@ -145,7 +176,6 @@ router.post("/register", async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 });
-
 
 /* ================= LOGIN ================= */
 router.post("/login", async (req, res) => {

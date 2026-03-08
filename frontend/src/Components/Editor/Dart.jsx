@@ -16,20 +16,29 @@ function Dart() {
   const [code, setCode] = useState("");
   const [output, setOutput] = useState("");
   const [showAI, setShowAI] = useState(false);
+  const [input, setInput] = useState("");
   const { askAI, loading, result } = useAI();
 
   const isError =
     output && /error|failed|warning|segmentation|exception/i.test(output);
 
+  const expectsInput = /stdin\.readLineSync/.test(code);
   const handleSubmit = async () => {
+    if (expectsInput && !input.trim()) {
+      toast.error("⚠ This Dart program expects input. Please provide input.");
+      setOutput("Error: Input required but not provided.");
+      return;
+    }
+
     toast.loading("Executing Dart code...");
+
     try {
       const response = await fetch(
         `${import.meta.env.VITE_SERVER_URL}/api/auth/rundart`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ language: "dart", code }),
+          body: JSON.stringify({ code, input }),
         },
       );
 
@@ -37,13 +46,13 @@ function Dart() {
       toast.remove();
 
       if (response.ok) {
-        setOutput(data.output);
+        setOutput(data.output || data.error || "No output");
         toast.success("Executed Successfully");
       } else {
-        setOutput(data.error);
+        setOutput(data.error || "Execution failed");
         toast.error("Execution Error");
       }
-    } catch {
+    } catch (err) {
       toast.remove();
       setOutput("Server Error");
       toast.error("Server Error");
@@ -53,6 +62,11 @@ function Dart() {
   const clear = () => {
     setOutput("");
     toast.success("Output Cleared");
+  };
+
+  const clearInput = () => {
+    setInput("");
+    toast.success("Input Cleared");
   };
 
   const copyContent = () => {
@@ -71,114 +85,137 @@ function Dart() {
 
   return (
     <>
-    <Header/>
-    <div className="flex h-screen bg-slate-950 text-zinc-100">
-      <LangList />
+      <Header />
+      <div className="flex h-screen bg-slate-950 text-zinc-100">
+        <LangList />
 
-      <div className="flex-1 flex flex-col">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-800 bg-zinc-900">
-          <h2 className="text-indigo-400 font-semibold text-lg">main.dart</h2>
+        <div className="flex-1 flex flex-col">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-800 bg-zinc-900">
+            <h2 className="text-indigo-400 font-semibold text-lg">main.dart</h2>
 
-          <div className="flex items-center gap-3">
-            <AIButton
-              label={
-                loading
-                  ? "Thinking..."
-                  : isError
-                    ? "Explain Error"
-                    : "Improve Code"
-              }
-              disabled={loading || !code.trim()}
-              onClick={() => {
-                setShowAI(true);
-                askAI({
-                  language: "Dart",
-                  code,
-                  output,
-                  mode: isError ? "error" : "optimize",
-                });
-              }}
-            />
-
-            <button
-              onClick={copyContent}
-              className="p-2 cursor-pointer rounded-md border border-zinc-700 bg-zinc-800 hover:bg-zinc-700 transition"
-            >
-              <FaCopy size={20} />
-            </button>
-
-            <button
-              onClick={codeToFile}
-              className="p-2 cursor-pointer rounded-md border border-zinc-700 bg-zinc-800 hover:bg-zinc-700 transition"
-            >
-              <FaDownload size={20} />
-            </button>
-
-            <div className="h-6 w-px bg-zinc-700 mx-2" />
-
-            <button
-              onClick={handleSubmit}
-              className="px-8 cursor-pointer py-2.5 bg-indigo-500 hover:bg-indigo-600 rounded-md font-semibold text-sm shadow-lg transition"
-            >
-              RUN
-            </button>
-          </div>
-        </div>
-
-        <div className="flex flex-1 gap-4 p-5">
-          <div className="w-1/2 bg-zinc-900 border border-zinc-800 rounded-xl p-4 flex flex-col">
-            <p className="text-sm text-zinc-400 mb-2">
-              💻 Press <span className="text-indigo-400 font-medium">TAB</span>{" "}
-              to insert starter Dart code
-            </p>
-
-            <textarea
-              className="flex-1 bg-transparent outline-none resize-none font-mono text-[16px] leading-6 text-zinc-100"
-              value={code}
-              onChange={(e) => setCode(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Tab" && code.trim() === "") {
-                  e.preventDefault();
-                  setCode(DEFAULT_DART_CODE);
+            <div className="flex items-center gap-3">
+              <AIButton
+                label={
+                  loading
+                    ? "Thinking..."
+                    : isError
+                      ? "Explain Error"
+                      : "Improve Code"
                 }
-              }}
-              placeholder="Start typing Dart code..."
-            />
-          </div>
+                disabled={loading || !code.trim()}
+                onClick={() => {
+                  setShowAI(true);
+                  askAI({
+                    language: "Dart",
+                    code,
+                    output,
+                    mode: isError ? "error" : "optimize",
+                  });
+                }}
+              />
 
-          <div className="w-1/2 bg-zinc-900 border border-zinc-800 rounded-xl p-4 flex flex-col">
-            <div className="flex justify-between items-center mb-2">
-              <p className="text-sm text-zinc-400">🖥 Output</p>
               <button
-                onClick={clear}
-                className="text-sm cursor-pointer text-indigo-400 hover:underline"
+                onClick={copyContent}
+                className="p-2 cursor-pointer rounded-md border border-zinc-700 bg-zinc-800 hover:bg-zinc-700 transition"
               >
-                Clear
+                <FaCopy size={20} />
+              </button>
+
+              <button
+                onClick={codeToFile}
+                className="p-2 cursor-pointer rounded-md border border-zinc-700 bg-zinc-800 hover:bg-zinc-700 transition"
+              >
+                <FaDownload size={20} />
+              </button>
+
+              <div className="h-6 w-px bg-zinc-700 mx-2" />
+
+              <button
+                onClick={handleSubmit}
+                className="px-8 cursor-pointer py-2.5 bg-indigo-500 hover:bg-indigo-600 rounded-md font-semibold text-sm shadow-lg transition"
+              >
+                RUN
               </button>
             </div>
+          </div>
 
-            <pre className="flex-1 overflow-auto text-[16px] text-green-400 font-mono whitespace-pre-wrap">
-              {output || "// Output will appear here"}
-            </pre>
+          <div className="flex flex-1 gap-4 p-5">
+            <div className="w-1/2 bg-zinc-900 border border-zinc-800 rounded-xl p-4 flex flex-col">
+              <p className="text-sm text-zinc-400 mb-2">
+                💻 Press{" "}
+                <span className="text-indigo-400 font-medium">TAB</span> to
+                insert starter Dart code
+              </p>
+
+              <textarea
+                className="flex-1 bg-transparent outline-none resize-none font-mono text-[16px] leading-6 text-zinc-100"
+                value={code}
+                onChange={(e) => setCode(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Tab" && code.trim() === "") {
+                    e.preventDefault();
+                    setCode(DEFAULT_DART_CODE);
+                  }
+                }}
+                placeholder="Start typing Dart code..."
+              />
+            </div>
+
+            <div className="w-1/2 bg-zinc-900 border border-zinc-800 rounded-xl p-4 flex flex-col">
+              <div className="mb-3">
+                <div className="flex items-center justify-between mb-1">
+                  <p className="text-sm text-zinc-400 mb-1">📥 Input</p>
+                  <button
+                    onClick={clearInput}
+                    className="text-sm text-indigo-400 hover:underline"
+                  >
+                    Clear
+                  </button>
+                </div>
+                <textarea
+                  className={`w-full bg-zinc-800 border ${
+                    expectsInput && !input.trim()
+                      ? "border-red-500"
+                      : "border-zinc-700"
+                  } rounded-md p-2 text-sm font-mono text-zinc-200 resize-none`}
+                  rows="4"
+                  placeholder="Enter input here..."
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                />
+              </div>
+              <div className="flex justify-between items-center mb-2">
+                <p className="text-sm text-zinc-400">🖥 Output</p>
+                <button
+                  onClick={clear}
+                  className="text-sm cursor-pointer text-indigo-400 hover:underline"
+                >
+                  Clear
+                </button>
+              </div>
+
+              <pre className="flex-1 overflow-auto text-[16px] text-green-400 font-mono whitespace-pre-wrap">
+                {output || "// Output will appear here"}
+              </pre>
+            </div>
           </div>
         </div>
+        {showAI && (
+          <AIPanel
+            loading={loading}
+            result={result}
+            onClose={() => setShowAI(false)}
+            onAsk={(question) =>
+              askAI({
+                language: "Dart",
+                code,
+                output: question,
+                mode: "followup",
+              })
+            }
+          />
+        )}
       </div>
-      {showAI && (
-        <AIPanel
-          loading={loading}
-          result={result}
-          onClose={() => setShowAI(false)}
-          onAsk={(question) =>
-            askAI({
-              language: "Dart",
-              code,
-              output: question,
-              mode: "followup",
-            })
-          }
-        />
-      )}
-    </div>
     </>
   );
 }
